@@ -31,9 +31,48 @@ local plvl = UnitLevel('player');
 
 local defaults = {
 	["ConROC_SM_Role_Melee"] = true,
-	["ConROC_SM_Judgement_Crusader"] = true,
-	["ConROC_SM_Seal_Righteousness"] = true,
-	["ConROC_SM_Bless_Might"] = true,
+	["ConROC_Melee_Seal_Command"] = false,
+	["ConROC_Melee_Seal_Wisdom"] = false,
+	["ConROC_Melee_Seal_Justice"] = false,
+	["ConROC_Melee_Seal_Light"] = false,
+	["ConROC_Melee_Seal_Crusader"] = false,
+	["ConROC_Melee_Seal_Righteousness"] = true,
+	["ConROC_Melee_Judgement_Crusader"] = true,
+	["ConROC_Melee_Bless_Might"] = true,
+	["ConROC_Melee_Aura_Devotion"] = true,	
+	
+	["ConROC_SM_Role_Healer"] = false,
+	["ConROC_Healer_Seal_Wisdom"] = false,
+	["ConROC_Healer_Seal_Crusader"] = false,
+	["ConROC_Healer_Seal_Righteousness"] = true,
+	["ConROC_Healer_Seal_Light"] = false,
+	["ConROC_Healer_Seal_Justice"] = false,
+	["ConROC_Healer_Seal_Command"] = false,
+	["ConROC_Healer_Judgement_Crusader"] = true,
+	["ConROC_Healer_Bless_Might"] = true,
+	["ConROC_Healer_Aura_Devotion"] = true,
+
+	["ConROC_SM_Role_Tank"] = false,
+	["ConROC_Tank_Seal_Wisdom"] = false,
+	["ConROC_Tank_Seal_Justice"] = false,
+	["ConROC_Tank_Seal_Light"] = false,
+	["ConROC_Tank_Seal_Command"] = false,
+	["ConROC_Tank_Seal_Righteousness"] = true,
+	["ConROC_Tank_Seal_Crusader"] = false,
+	["ConROC_Tank_Judgement_Crusader"] = true,
+	["ConROC_Tank_Bless_Might"] = true,
+	["ConROC_Tank_Aura_Devotion"] = true,
+
+	["ConROC_SM_Role_PvP"] = false,
+	["ConROC_PvP_Seal_Wisdom"] = false,
+	["ConROC_PvP_Seal_Crusader"] = false,
+	["ConROC_PvP_Seal_Justice"] = false,
+	["ConROC_PvP_Seal_Command"] = false,
+	["ConROC_PvP_Seal_Light"] = false,
+	["ConROC_PvP_Seal_Righteousness"] = true,
+	["ConROC_PvP_Judgement_Crusader"] = true,
+	["ConROC_PvP_Bless_Might"] = true,
+	["ConROC_PvP_Aura_Devotion"] = true,
 }
 
 ConROCPaladinSpells = ConROCPaladinSpells or defaults;
@@ -158,11 +197,13 @@ function ConROC:SpellmenuClass()
 	    frameName = "Seals",
 	    spells = {
 	    	{spellID = ids.optionMaxIds.SealofRighteousness, spellCheckbox = "Seal_Righteousness", reqLevel = 1, type="spell"},
+	    	{spellID = ids.optionMaxIds.SealofMartyrdom, spellCheckbox = "Seal_Martyrdom", reqLevel = 1, type="spell"},
 	    	{spellID = ids.optionMaxIds.SealoftheCrusader, spellCheckbox = "Seal_Crusader", reqLevel = 6, type="spell"},
 	    	{spellID = ids.optionMaxIds.SealofCommand, spellCheckbox = "Seal_Command", reqLevel = 20, type="spell"},
 	    	{spellID = ids.optionMaxIds.SealofJustice, spellCheckbox = "Seal_Justice", reqLevel = 22, type="spell"},
 	    	{spellID = ids.optionMaxIds.SealofLight, spellCheckbox = "Seal_Light", reqLevel = 30, type="spell"},
 	    	{spellID = ids.optionMaxIds.SealofWisdom, spellCheckbox = "Seal_Wisdom", reqLevel = 38, type="spell"},
+	    	--{spellID = "None", spellCheckbox = "Seal_None", reqLevel = 1, type="none"}
 	    },
 	    groupType = "radioButtons"
 	  },
@@ -836,7 +877,7 @@ function ConROC:SpellMenuUpdate(newSpell)
 						oItem:SetPoint("TOPLEFT", lFrame, "BOTTOMLEFT", 0, 0);
 					end
 					if type(_spellData.spellID) == "number" then
-						if plvl >= _spellData.reqLevel and IsSpellKnown(_spellData.spellID) then
+						if plvl >= _spellData.reqLevel and (IsSpellKnown(_spellData.spellID) or IsSpellKnownOrOverridesKnown(_spellData.spellID)) then
 							lFrame = oItem;
 							lFrame:Show();
 							if oItem:IsShown() then
@@ -924,7 +965,7 @@ function ConROC:SpellMenuUpdate(newSpell)
 					else
 						oItem:SetPoint("TOPLEFT", lFrame, "BOTTOMLEFT", 0, 0);
 					end
-					if plvl >= _spellData.reqLevel and IsSpellKnown(_spellData.spellID) then													
+					if plvl >= _spellData.reqLevel and (IsSpellKnown(_spellData.spellID) or IsSpellKnownOrOverridesKnown(_spellData.spellID)) then
 						lFrame = oItem;
 						lFrame:Show();
 							if oItem:IsShown() then

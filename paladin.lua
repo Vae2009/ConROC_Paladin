@@ -11,7 +11,8 @@ ConROC.Paladin = {};
 
 local ConROC_Paladin, ids = ...;
 local optionMaxIds = ...;
-local currentSpecName
+local currentSpecName;
+local currentSpecID;
 
 local consecEXP = 0;
 
@@ -31,37 +32,28 @@ function ConROC:PopulateTalentIDs()
     local numTabs = GetNumTalentTabs()
     
     for tabIndex = 1, numTabs do
-        local tabName = GetTalentTabInfo(tabIndex) .. "_Talent"
-        tabName = string.gsub(tabName, "%s", "") -- Remove spaces from tab name
-        if printTalentsMode then
-        	print(tabName..": ")
-        else
-        	ids[tabName] = {}
-    	end
-        
+        local tabName = GetTalentTabInfo(tabIndex)
+        tabName = string.gsub(tabName, "[^%w]", "") .. "_Talent" -- Remove spaces from tab name
+        print("ids."..tabName.." = {")
         local numTalents = GetNumTalents(tabIndex)
 
         for talentIndex = 1, numTalents do
             local name, _, _, _, _ = GetTalentInfo(tabIndex, talentIndex)
 
             if name then
-                local talentID = string.gsub(name, "%s", "") -- Remove spaces from talent name
-                if printTalentsMode then
-                	print(talentID .." = ID no: ", talentIndex)
-                else
-                	ids[tabName][talentID] = talentIndex
-                end
+                local talentID = string.gsub(name, "[^%w]", "") -- Remove spaces from talent name
+                    print(talentID .." = ", talentIndex ..",")
             end
         end
+        print("}")
     end
-    if printTalentsMode then printTalentsMode = false end
 end
-ConROC:PopulateTalentIDs()
 
 local Racial, Spec, Holy_Ability, Holy_Talent, Prot_Ability, Prot_Talent, Ret_Ability, Ret_Talent, Player_Buff, Player_Debuff, Target_Debuff, Player_Auras = ids.Racial, ids.Spec, ids.Holy_Ability, ids.Holy_Talent, ids.Prot_Ability, ids.Protection_Talent, ids.Ret_Ability, ids.Retribution_Talent, ids.Player_Buff, ids.Player_Debuff, ids.Target_Debuff, ids.Player_Auras;
 
 function ConROC:SpecUpdate()
 	currentSpecName = ConROC:currentSpec()
+    currentSpecID = ConROC:currentSpec("ID")
 
 	if currentSpecName then
 	   ConROC:Print(self.Colors.Info .. "Current spec:", self.Colors.Success ..  currentSpecName)
@@ -118,7 +110,17 @@ ConROC:SpecUpdate()
 	local _JudgementofJusticeDEBUFF = Target_Debuff.JudgementofJustice
 	local _JudgementofLightDEBUFF = Target_Debuff.JudgementofLightRank1;
 	local _JudgementofWisdomDEBUFF = Target_Debuff.JudgementofWisdomRank1;
-
+--Runes
+	local _DivineStorm = ids.Runes.DivineStorm
+	local _HornofLordaeron = ids.Runes.HornofLordaeron
+	local _SealofMartyrdom = ids.Runes.SealofMartyrdom
+	local _BeaconofLight = ids.Runes.BeaconofLight
+	local _CrusaderStrike = ids.Runes.CrusaderStrike
+	local _InspirationExemplar = ids.Runes.InspirationExemplar
+	local _HandofReckoning = ids.Runes.HandofReckoning
+	local _AvengersShield = ids.Runes.AvengersShield
+	local _DivineSacrifice = ids.Runes.DivineSacrifice
+	local _Rebuke = ids.Runes.Rebuke
 --Auras
 	--Holy
 	local _ConcentrationAura = Player_Auras.ConcentrationAura;
@@ -311,6 +313,17 @@ ids.optionMaxIds = {
 	SanctityAura = _SanctityAura,
 	ShadowResistanceAura = _ShadowResistanceAura,
 	RetributionAura = _RetributionAura,
+	--Runes
+	DivineStorm = _DivineStorm,
+	HornofLordaeron = _HornofLordaeron,
+	SealofMartyrdom = _SealofMartyrdom,
+	BeaconofLight = _BeaconofLight,
+	CrusaderStrike = _CrusaderStrike,
+	InspirationExemplar = _InspirationExemplar,
+	HandofReckoning = _HandofReckoning,
+	AvengersShield = _AvengersShield,
+	DivineSacrifice = _DivineSacrifice,
+--	Rebuke = _Rebuke,
 }
 end
 ConROC:UpdateSpellID()
@@ -329,7 +342,7 @@ function ConROC:PLAYER_TALENT_UPDATE()
 	ConROC:SpecUpdate();
     ConROC:closeSpellmenu();
 end
-		
+
 function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 ConROC:UpdateSpellID()
 --Character
@@ -377,9 +390,9 @@ ConROC:UpdateSpellID()
 	local soWisdom											= ConROC:AbilityReady(_SealofWisdom, timeShift);
 		local sowBuff											= ConROC:Buff(_SealofWisdom, timeShift);
 	local soRighteousness									= ConROC:AbilityReady(_SealofRighteousness, timeShift);
-		local sorBuff											= ConROC:Buff(_SealofRighteousness, timeShift);	
+		local sorBuff, sorDUR									= ConROC:BuffName(_SealofRighteousness, timeShift);	
 	local soCommand											= ConROC:AbilityReady(_SealofCommand, timeShift);
-		local socomBuff											= ConROC:Buff(_SealofCommand, timeShift);
+		local socomBuff, socomDUR								= ConROC:BuffName(_SealofCommand, timeShift);
 	local exorcism											= ConROC:AbilityReady(_Exorcism, timeShift);
 	local hoJustice											= ConROC:AbilityReady(_HammerofJustice, timeShift);
 		local hojDebuff = ConROC:TargetDebuff(_HammerofJustice, timeShift);
@@ -398,14 +411,33 @@ ConROC:UpdateSpellID()
 				break
 			end
 		end
+
+	--Runes
+	local dStormRDY											= ConROC:AbilityReady(_DivineStorm, timeShift);
+	local hofLRDY											= ConROC:AbilityReady(_HornofLordaeron, timeShift);
+	local sofMRDY											= ConROC:AbilityReady(_SealofMartyrdom, timeShift);
+		local sofMBUFF, sofMDUR 								=ConROC:BuffName(_SealofMartyrdom, timeShift);
+	local bofLRDY											= ConROC:AbilityReady(_BeaconofLight, timeShift);
+	local cStrikeRDY										= ConROC:AbilityReady(_CrusaderStrike, timeShift);
+	local inspExemplarRDY									= ConROC:AbilityReady(_InspirationExemplar, timeShift);
+	local hofRecRDY											= ConROC:AbilityReady(_HandofReckoning, timeShift);
+	local aShieldRDY										= ConROC:AbilityReady(_AvengersShield, timeShift);
+	local dSacrificeRDY										= ConROC:AbilityReady(_DivineSacrifice, timeShift);
+	local rebukeRDY											= ConROC:AbilityReady(_Rebuke, timeShift);
+ 
 		
---Conditions	
+--Conditions
+	local knowMartyrdom										= IsSpellKnownOrOverridesKnown(_SealofMartyrdom)
+	local isExorcist										= IsSpellKnownOrOverridesKnown(ids.Runes.Exorcist)
+	local incombat 											= UnitAffectingCombat('player');	
 	local isEnemy 											= ConROC:TarHostile();
 	local isAutoAttacking 									= IsPlayerAttacking("target");
 	local Close 											= CheckInteractDistance("target", 3);
 	local tarInMelee										= 0;
 	local tarInAoe											= 0;
-	
+	local twohandIDs = {1,5,6,8,10} --Two-Handed Axes, Two-Handed Maces, Polearms, Two-Handed Swords, Saves
+	local has2HandID = ConROC:Equipped(twohandIDs, "MAINHANDSLOT")
+
 	if IsSpellKnown(_autoAttack) then
 		tarInMelee = ConROC:Targets(_autoAttack);
 	end
@@ -424,11 +456,86 @@ ConROC:UpdateSpellID()
 		ConROC:AbilityRaidBuffs(_GreaterBlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_GreaterSanctuary) and gBoSanc and not gBosaBuff);
 	end
 	ConROC:AbilityRaidBuffs(_BlessingofLight, ConROC:CheckBox(ConROC_SM_Bless_Light) and boLight and not bolBuff);
+    
+    ConROC:AbilityInterrupt(_Rebuke, ConROC:Interrupt() and rebukeRDY)
 	
 --Warnings
 	
 --Rotations
-	if (currentSpecName == "Holy" and ConROC:TarHostile()) or (not currentSpecName == "Holy" or currentSpecName == nil) then
+	if ConROC.Seasons.IsSoD then
+		if ConROC:CheckBox(ConROC_SM_Role_Melee) or (ConROC:CheckBox(ConROC_SM_Role_Healer) and ConROC:TarHostile()) then
+			if not ConROC_AoEButton:IsVisible() then
+				if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and soCrusader and not socBuff and not judgeDebuff.joc and (judgeCD >= judgeMCD - 1) then
+					return _SealoftheCrusader;
+				end
+				if judgement and not judgeUp and socBuff then
+					return Ret_Ability.Judgement;
+				end
+			end
+
+			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and soRighteousness and (not sorBuff or sorDUR <= 2) and not (socBuff or sofMBUFF) then
+				return _SealofRighteousness;
+			end
+			if ConROC:CheckBox(ConROC_SM_Seal_Command) and soCommand and not socomBuff then
+				return _SealofCommand;
+			end
+			if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and soCrusader and not socBuff and not judgeDebuff.joc and (judgeCD >= judgeMCD - 1) then
+				return _SealoftheCrusader;
+			end
+
+			if ConROC:CheckBox(ConROC_SM_Seal_Justice) and soJustice and not sojBuff and not judgeDebuff.joj and (judgeCD >= judgeMCD - 1) then
+				return Prot_Ability.SealofJustice;
+			end
+			
+			if ConROC:CheckBox(ConROC_SM_Seal_Light) and soLight and not solBuff and not judgeDebuff.jol and (judgeCD >= judgeMCD - 1) then
+				return _SealofLight;
+			end	
+			
+			if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and soWisdom and not sowBuff and not judgeDebuff.jow and (judgeCD >= judgeMCD - 1) then
+				return _SealofWisdom;
+			end
+			if dStormRDY then
+				return _DivineStormRDY
+			end
+			if cStrikeRDY then
+				return _CrusaderStrike
+			end
+			if exorcism and (ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon") or isExorcist ) then
+				return _Exorcism;
+			end
+			if judgement and not judgeUp then
+				return Ret_Ability.Judgement;
+			end
+		end
+		if ConROC:CheckBox(ConROC_SM_Role_Tank) then		
+			if soCommand and not socomBuff and not knowMartyrdom then
+				return _SealofCommand;
+			end
+			if sofMRDY and knowMartyrdom and not sofMBUFF then
+				return _SealofMartyrdom
+			end
+			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and soRighteousness and (not sorBuff or sorDUR <= 2) and not (socBuff or sofMBUFF) then
+				return _SealofRighteousness;
+			end
+			if aShieldRDY then
+				return _AvengersShield
+			end
+			if isExorcist and exorcism then
+				return _Exorcism
+			end
+			if judgement and not judgeUp then
+				return Ret_Ability.Judgement;
+			end
+			if dStormRDY then
+				return _DivineStormRDY
+			end
+			if consecRDY then
+				return _Consecration
+			end
+		end
+		return nil
+	end
+	if (currentSpecID == ids.Spec.Holy and ConROC:TarHostile()) or (not currentSpecID == ids.Spec.Holy or not currentSpecID) then
 		if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and soCrusader and not socBuff and not judgeDebuff.joc and (judgeCD >= judgeMCD - 1) then
 			return _SealoftheCrusader;
 		end
@@ -449,7 +556,7 @@ ConROC:UpdateSpellID()
 			return Ret_Ability.Judgement;
 		end	
 
-		if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and soRighteousness and not sorBuff then
+		if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and soRighteousness and (not sorBuff or sorDUR <= 2) then
 			return _SealofRighteousness;
 		end
 		
@@ -487,11 +594,11 @@ ConROC:UpdateSpellID()
 	end
 	return nil;
 	--[[
-	if currentSpecName == "Holy" then
+	if currentSpecID == ids.Spec.Holy then
 	end
-	if currentSpecName == "Protection" then
+	if currentSpecID == ids.Spec.Protection then
 	end
-	if currentSpecName == "Retribution" then
+	if currentSpecID == ids.Spec.Retribution then
 	end
 	--]]
 end

@@ -87,6 +87,22 @@ local ConROC_Paladin, ids = ...;
 		TurnUndeadRank2 = 5627,
 		TurnUndeadRank3 = 10326,
 	}
+	ids.Holy_Talent = { 
+		SpiritualFocus =  1, 
+		DivineFavor =  2, 
+		Consecration =  3, 
+		ImprovedLayonHands =  4, 
+		HealingLight =  5, 
+		ImprovedBlessingofWisdom =  6, 
+		DivineIntellect =  7, 
+		DivineStrength =  8, 
+		Illumination =  9, 
+		ImprovedSealofRighteousness =  10, 
+		LastingJudgement =  11, 
+		HolyShock =  12, 
+		HolyPower =  13, 
+		UnyieldingFaith =  14, 
+	}
 --Protection
 	ids.Prot_Ability = {
 		BlessingofFreedom = 1044,
@@ -120,6 +136,23 @@ local ConROC_Paladin, ids = ...;
 		RighteousFury = 25780,
 		SealofJustice = 20164,
 	}
+	ids.Protection_Talent = { 
+		Redoubt =  1, 
+		ImprovedDevotionAura =  2, 
+		Toughness =  3, 
+		ShieldSpecialization =  4, 
+		GuardiansFavor =  5, 
+		Reckoning =  6, 
+		OneHandedWeaponSpecialization =  7, 
+		HolyShield =  8, 
+		BlessingofSanctuary =  9, 
+		BlessingofKings =  10, 
+		ImprovedRighteousFury =  11, 
+		ImprovedHammerofJustice =  12, 
+		ImprovedConcentrationAura =  13, 
+		Anticipation =  14, 
+		Precision =  15, 
+	} 
 --Retribution
 	ids.Ret_Ability = {
 		BlessingofMightRank1 = 19740,
@@ -143,6 +176,38 @@ local ConROC_Paladin, ids = ...;
 		SealoftheCrusaderRank4 = 20306,
 		SealoftheCrusaderRank5 = 20307,
 		SealoftheCrusaderRank6 = 20308,
+	}
+	ids.Retribution_Talent = { 
+		ImprovedBlessingofMight =  1, 
+		Vengeance =  2, 
+		Deflection =  3, 
+		ImprovedRetributionAura =  4, 
+		Benediction =  5, 
+		SanctityAura =  6, 
+		TwoHandedWeaponSpecialization =  7, 
+		Conviction =  8, 
+		Repentance =  9, 
+		ImprovedSealoftheCrusader =  10, 
+		SealofCommand =  11, 
+		ImprovedJudgement =  12, 
+		EyeforanEye =  13, 
+		Vindication =  14, 
+		PursuitofJustice =  15, 
+	}
+	ids.Runes = {
+		DivineStorm = 407778,
+		HornofLordaeron = 425600,
+		SealofMartyrdom = 407798,
+		BeaconofLight = 407613,
+		CrusaderStrike = 407676,
+		InspirationExemplar = 407880,
+		HandofReckoning = 407631,
+		AvengersShield = 407669,
+		DivineSacrifice = 407804,
+		Rebuke = 425609,
+		Exorcist = 415756,
+		SheathofLight = 426158, --Phase 2 -passive
+		GuardedbytheLight = 415755, --Phase 2 -passive
 	}
 -- Auras
 	ids.Player_Auras = {
