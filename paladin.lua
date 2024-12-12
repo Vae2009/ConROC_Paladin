@@ -1,20 +1,16 @@
-local printTalentsMode = false
-
--- Slash command for printing talent tree with talent names and ID numbers
-SLASH_CONROCPRINTTALENTS1 = "/ConROCPT"
-SlashCmdList["CONROCPRINTTALENTS"] = function()
-    printTalentsMode = not printTalentsMode
-    ConROC:PopulateTalentIDs()
-end
-
 ConROC.Paladin = {};
 
 local ConROC_Paladin, ids = ...;
-local optionMaxIds = ...;
 local currentSpecName;
 local currentSpecID;
 
-local consecEXP = 0;
+function ConROC:EnableRotationModule()
+	self.Description = "Paladin";
+	self.NextSpell = ConROC.Paladin.Damage;
+
+	self:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED');
+	self.lastSpellId = 0;
+end
 
 function ConROC:EnableDefenseModule()
 	self.NextDef = ConROC.Paladin.Defense;
@@ -28,29 +24,6 @@ function ConROC:UNIT_SPELLCAST_SUCCEEDED(event, unitID, lineID, spellID)
 	ConROC:JustCasted(spellID);
 end
 
-function ConROC:PopulateTalentIDs()
-    local numTabs = GetNumTalentTabs()
-    
-    for tabIndex = 1, numTabs do
-        local tabName = GetTalentTabInfo(tabIndex)
-        tabName = string.gsub(tabName, "[^%w]", "") .. "_Talent" -- Remove spaces from tab name
-        print("ids."..tabName.." = {")
-        local numTalents = GetNumTalents(tabIndex)
-
-        for talentIndex = 1, numTalents do
-            local name, _, _, _, _ = GetTalentInfo(tabIndex, talentIndex)
-
-            if name then
-                local talentID = string.gsub(name, "[^%w]", "") -- Remove spaces from talent name
-                    print(talentID .." = ", talentIndex ..",")
-            end
-        end
-        print("}")
-    end
-end
-
-local Racial, Spec, Holy_Ability, Holy_Talent, Prot_Ability, Prot_Talent, Ret_Ability, Ret_Talent, Player_Buff, Player_Debuff, Target_Debuff, Player_Auras = ids.Racial, ids.Spec, ids.Holy_Ability, ids.Holy_Talent, ids.Prot_Ability, ids.Protection_Talent, ids.Ret_Ability, ids.Retribution_Talent, ids.Player_Buff, ids.Player_Debuff, ids.Target_Debuff, ids.Player_Auras;
-
 function ConROC:SpecUpdate()
 	currentSpecName = ConROC:currentSpec()
     currentSpecID = ConROC:currentSpec("ID")
@@ -61,348 +34,121 @@ function ConROC:SpecUpdate()
 	   ConROC:Print(self.Colors.Error .. "You do not currently have a spec.")
 	end
 end
+
 ConROC:SpecUpdate()
---Ranks
-	local _autoAttack = 6603;
-	--Holy
-	local _BlessingofLight = Holy_Ability.BlessingofLightRank1;
-	local _BlessingofWisdom = Holy_Ability.BlessingofWisdomRank1;
-	local _Consecration = Holy_Ability.ConsecrationRank1;
-	local _Exorcism = Holy_Ability.ExorcismRank1;
-	local _FlashofLight = Holy_Ability.FlashofLightRank1;
-	local _GreaterBlessingofWisdom = Holy_Ability.GreaterBlessingofWisdomRank1;
-	local _HammerofWrath = Holy_Ability.HammerofWrathRank1;
-	local _HolyLight = Holy_Ability.HolyLightRank1;
-	local _HolyShock = Holy_Ability.HolyShockRank1;	
-	local _HolyWrath = Holy_Ability.HolyWrathRank1;
-	local _LayonHands = Holy_Ability.LayonHandsRank1;
-	local _Redemption = Holy_Ability.RedemptionRank1;
-	local _SealofLight = Holy_Ability.SealofLightRank1;	
-	local _SealofRighteousness = Holy_Ability.SealofRighteousnessRank0;
-	local _SealofWisdom = Holy_Ability.SealofWisdomRank1;
-	local _TurnUndead = Holy_Ability.TurnUndeadRank1;
 
-	--Protection
-	local _BlessingofKings = Prot_Ability.BlessingofKings;
-	local _BlessingofProtection = Prot_Ability.BlessingofProtectionRank1;
-	local _BlessingofSacrifice = Prot_Ability.BlessingofSacrificeRank1;
-	local _BlessingofSanctuary = Prot_Ability.BlessingofSanctuaryRank1;
-	local _DivineProtection = Prot_Ability.DivineProtectionRank1;	
-	local _DivineShield = Prot_Ability.DivineShieldRank1;
-	local _GreaterBlessingofKings = Prot_Ability.GreaterBlessingofKings;
-	local _GreaterBlessingofSalvation = Prot_Ability.GreaterBlessingofSalvation;
-	local _GreaterBlessingofSanctuary = Prot_Ability.GreaterBlessingofSanctuary;
-	local _HammerofJustice = Prot_Ability.HammerofJusticeRank1;
-	local _HammeroftheRighteous = Prot_Ability.HammeroftheRighteous;
-	local _BlessingofSalvation = Prot_Ability.BlessingofSalvation;
-	local _HolyShield = Prot_Ability.HolyShieldRank1;
-	local _RighteousFury = Prot_Ability.RighteousFury;
-	local _SealofJustice = Prot_Ability.SealofJustice;
+local Racial, Spec, Ability, Rank, Holy_Talent, Prot_Talent, Ret_Talent, Runes, Buff, Debuff = ids.Racial, ids.Spec, ids.Ability, ids.Rank, ids.Holy_Talent, ids.Protection_Talent, ids.Retribution_Talent, ids.Runes, ids.Buff, ids.Debuff;
+local consecEXP = 0;
 
-	--Retribution
-	local _AvengingWrath = Ret_Ability.AvengingWrath;
-	local _BlessingofMight = Ret_Ability.BlessingofMightRank1;
-	local _GreaterBlessingofMight = Ret_Ability.GreaterBlessingofMightRank1;
-	local _SanctityAura = Player_Auras.SanctityAura;
-	local _SealofCommand = Ret_Ability.SealofCommandRank1;
-	local _SealoftheCrusader = Ret_Ability.SealoftheCrusaderRank1;
-	local _JudgementoftheCrusaderDEBUFF = Target_Debuff.JudgementoftheCrusaderRank1;
-	local _JudgementofJusticeDEBUFF = Target_Debuff.JudgementofJustice
-	local _JudgementofLightDEBUFF = Target_Debuff.JudgementofLightRank1;
-	local _JudgementofWisdomDEBUFF = Target_Debuff.JudgementofWisdomRank1;
---Runes
-	local _DivineStorm = ids.Runes.DivineStorm
-	local _HornofLordaeron = ids.Runes.HornofLordaeron
-	local _SealofMartyrdom = ids.Runes.SealofMartyrdom
-	local _BeaconofLight = ids.Runes.BeaconofLight
-	local _CrusaderStrike = ids.Runes.CrusaderStrike
-	local _InspirationExemplar = ids.Runes.InspirationExemplar
-	local _HandofReckoning = ids.Runes.HandofReckoning
-	local _AvengersShield = ids.Runes.AvengersShield
-	local _DivineSacrifice = ids.Runes.DivineSacrifice
-	local _Rebuke = ids.Runes.Rebuke
---Auras
-	--Holy
-	local _ConcentrationAura = Player_Auras.ConcentrationAura;
+--Info
+local _Player_Level = UnitLevel("player");
+local _Player_Percent_Health = ConROC:PercentHealth('player');
+local _is_PvP = ConROC:IsPvP();
+local _in_combat = UnitAffectingCombat('player');
+local _party_size = GetNumGroupMembers();
+local _is_PC = UnitPlayerControlled("target");
+local _is_Enemy = ConROC:TarHostile();
+local _Target_Health = UnitHealth('target');
+local _Target_Percent_Health = ConROC:PercentHealth('target');
 
-	--Protection
-	local _DevotionAura = Player_Auras.DevotionAuraRank1;
-	local _FireResistanceAura = Player_Auras.FireResistanceAuraRank1;
-	local _FrostResistanceAura = Player_Auras.FrostResistanceAuraRank1;	
-	local _ShadowResistanceAura = Player_Auras.ShadowResistanceAuraRank1;
+--Resources
+local _Mana, _Mana_Max = ConROC:PlayerPower('Mana');
 
-	--Retribution
-	local _RetributionAura = Player_Auras.RetributionAuraRank1;	
+--Conditions
+local _Queue = 0;
+local _is__is_moving = ConROC:PlayerSpeed();
+--local _enemies_in_melee, _target_in_melee = ConROC:Targets("Melee");
+--local _enemies_in_10yrds, _target_in_10yrds = ConROC:Targets("10");
+--local _enemies_in_25yrds, _target_in_25yrds = ConROC:Targets("25");
+--local _enemies_in_40yrds, _target_in_40yrds = ConROC:Targets("40");
+local _can_Execute = _Target_Percent_Health < 20;
 
-function ConROC:UpdateSpellID()
---Holy
-if IsSpellKnown(Holy_Ability.BlessingofLightRank3) then _BlessingofLight = Holy_Ability.BlessingofLightRank3;	
-elseif IsSpellKnown(Holy_Ability.BlessingofLightRank2) then _BlessingofLight = Holy_Ability.BlessingofLightRank2; end
+--Racials
+local _Perception, _Perception_RDY = _, _;
 
-if IsSpellKnown(Holy_Ability.BlessingofWisdomRank6) then _BlessingofWisdom = Holy_Ability.BlessingofWisdomRank6;
-elseif IsSpellKnown(Holy_Ability.BlessingofWisdomRank5) then _BlessingofWisdom = Holy_Ability.BlessingofWisdomRank5;
-elseif IsSpellKnown(Holy_Ability.BlessingofWisdomRank4) then _BlessingofWisdom = Holy_Ability.BlessingofWisdomRank4;
-elseif IsSpellKnown(Holy_Ability.BlessingofWisdomRank3) then _BlessingofWisdom = Holy_Ability.BlessingofWisdomRank3;	
-elseif IsSpellKnown(Holy_Ability.BlessingofWisdomRank2) then _BlessingofWisdom = Holy_Ability.BlessingofWisdomRank2; end
+function ConROC:Stats()
+	_Player_Level = UnitLevel("player");
+	_Player_Percent_Health = ConROC:PercentHealth('player');
+	_is_PvP = ConROC:IsPvP();
+	_in_combat = UnitAffectingCombat('player');
+	_party_size = GetNumGroupMembers();
+	_is_PC = UnitPlayerControlled("target");
+	_is_Enemy = ConROC:TarHostile();
+	_Target_Health = UnitHealth('target');
+	_Target_Percent_Health = ConROC:PercentHealth('target');
 
-if IsSpellKnown(Holy_Ability.ConsecrationRank5) then _Consecration = Holy_Ability.ConsecrationRank5;
-elseif IsSpellKnown(Holy_Ability.ConsecrationRank4) then _Consecration = Holy_Ability.ConsecrationRank4;
-elseif IsSpellKnown(Holy_Ability.ConsecrationRank3) then _Consecration = Holy_Ability.ConsecrationRank3;	
-elseif IsSpellKnown(Holy_Ability.ConsecrationRank2) then _Consecration = Holy_Ability.ConsecrationRank2; end
+	_Mana, _Mana_Max = ConROC:PlayerPower('Mana');
 
-if IsSpellKnown(Holy_Ability.ExorcismRank6) then _Exorcism = Holy_Ability.ExorcismRank6;
-elseif IsSpellKnown(Holy_Ability.ExorcismRank5) then _Exorcism = Holy_Ability.ExorcismRank5;
-elseif IsSpellKnown(Holy_Ability.ExorcismRank4) then _Exorcism = Holy_Ability.ExorcismRank4;
-elseif IsSpellKnown(Holy_Ability.ExorcismRank3) then _Exorcism = Holy_Ability.ExorcismRank3;
-elseif IsSpellKnown(Holy_Ability.ExorcismRank2) then _Exorcism = Holy_Ability.ExorcismRank2; end
+	_Queue = 0;
+	_is_moving = ConROC:PlayerSpeed();
+--	_enemies_in_melee, _target_in_melee = ConRO:Targets("Melee");
+--	_enemies_in_10yrds, _target_in_10yrds = ConRO:Targets("10");
+--	_enemies_in_25yrds, _target_in_25yrds = ConRO:Targets("25");
+--	_enemies_in_40yrds, _target_in_40yrds = ConRO:Targets("40");
+	_can_Execute = _Target_Percent_Health < 20;
 
-if IsSpellKnown(Holy_Ability.FlashofLightRank6) then _FlashofLight = Holy_Ability.FlashofLightRank6;
-elseif IsSpellKnown(Holy_Ability.FlashofLightRank5) then _FlashofLight = Holy_Ability.FlashofLightRank5;
-elseif IsSpellKnown(Holy_Ability.FlashofLightRank4) then _FlashofLight = Holy_Ability.FlashofLightRank4;
-elseif IsSpellKnown(Holy_Ability.FlashofLightRank3) then _FlashofLight = Holy_Ability.FlashofLightRank3;
-elseif IsSpellKnown(Holy_Ability.FlashofLightRank2) then _FlashofLight = Holy_Ability.FlashofLightRank2; end	
-
-if IsSpellKnown(Holy_Ability.GreaterBlessingofWisdomRank2) then _GreaterBlessingofWisdom = Holy_Ability.GreaterBlessingofWisdomRank2; end
-
-if IsSpellKnown(Holy_Ability.HammerofWrathRank3) then _HammerofWrath = Holy_Ability.HammerofWrathRank3;
-elseif IsSpellKnown(Holy_Ability.HammerofWrathRank2) then _HammerofWrath = Holy_Ability.HammerofWrathRank2; end
-
-if IsSpellKnown(Holy_Ability.HolyLightRank8) then _HolyLight = Holy_Ability.HolyLightRank8;
-elseif IsSpellKnown(Holy_Ability.HolyLightRank7) then _HolyLight = Holy_Ability.HolyLightRank7;
-elseif IsSpellKnown(Holy_Ability.HolyLightRank6) then _HolyLight = Holy_Ability.HolyLightRank6;
-elseif IsSpellKnown(Holy_Ability.HolyLightRank5) then _HolyLight = Holy_Ability.HolyLightRank5;
-elseif IsSpellKnown(Holy_Ability.HolyLightRank4) then _HolyLight = Holy_Ability.HolyLightRank4;
-elseif IsSpellKnown(Holy_Ability.HolyLightRank3) then _HolyLight = Holy_Ability.HolyLightRank3;
-elseif IsSpellKnown(Holy_Ability.HolyLightRank2) then _HolyLight = Holy_Ability.HolyLightRank2; end
-
-if IsSpellKnown(Holy_Ability.HolyShockRank3) then _HolyShock = Holy_Ability.HolyShockRank3;	
-elseif IsSpellKnown(Holy_Ability.HolyShockRank2) then _HolyShock = Holy_Ability.HolyShockRank2; end	
-
-if IsSpellKnown(Holy_Ability.HolyWrathRank2) then _HolyWrath = Holy_Ability.HolyWrathRank2; end
-
-if IsSpellKnown(Holy_Ability.SealofLightRank4) then _SealofLight = Holy_Ability.SealofLightRank4; _JudgementofLightDEBUFF = Target_Debuff.JudgementofLightRank4;
-elseif IsSpellKnown(Holy_Ability.SealofLightRank3) then _SealofLight = Holy_Ability.SealofLightRank3; _JudgementofLightDEBUFF = Target_Debuff.JudgementofLightRank3;
-elseif IsSpellKnown(Holy_Ability.SealofLightRank2) then _SealofLight = Holy_Ability.SealofLightRank2; _JudgementofLightDEBUFF = Target_Debuff.JudgementofLightRank2; end
-
-if IsSpellKnown(Holy_Ability.SealofRighteousnessRank8) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank8;
-elseif IsSpellKnown(Holy_Ability.SealofRighteousnessRank7) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank7;
-elseif IsSpellKnown(Holy_Ability.SealofRighteousnessRank6) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank6;
-elseif IsSpellKnown(Holy_Ability.SealofRighteousnessRank5) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank5;
-elseif IsSpellKnown(Holy_Ability.SealofRighteousnessRank4) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank4;
-elseif IsSpellKnown(Holy_Ability.SealofRighteousnessRank3) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank3;
-elseif IsSpellKnown(Holy_Ability.SealofRighteousnessRank2) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank2;
-elseif IsSpellKnown(Holy_Ability.SealofRighteousnessRank1) then _SealofRighteousness = Holy_Ability.SealofRighteousnessRank1; end
-
-if IsSpellKnown(Holy_Ability.SealofWisdomRank3) then _SealofWisdom = Holy_Ability.SealofWisdomRank3; _JudgementofWisdomDEBUFF = Target_Debuff.JudgementofWisdomRank3;
-elseif IsSpellKnown(Holy_Ability.SealofWisdomRank2) then _SealofWisdom = Holy_Ability.SealofWisdomRank2; _JudgementofWisdomDEBUFF = Target_Debuff.JudgementofWisdomRank2; end
-
-if IsSpellKnown(Holy_Ability.TurnUndeadRank3) then _SealofWisdom = Holy_Ability.TurnUndeadRank3;
-elseif IsSpellKnown(Holy_Ability.TurnUndeadRank2) then _SealofWisdom = Holy_Ability.TurnUndeadRank2;end
-
---Protection
-if IsSpellKnown(Prot_Ability.BlessingofProtectionRank3) then _BlessingofProtection = Prot_Ability.BlessingofProtectionRank3;	
-elseif IsSpellKnown(Prot_Ability.BlessingofProtectionRank2) then _BlessingofProtection = Prot_Ability.BlessingofProtectionRank2; end
-
-if IsSpellKnown(Prot_Ability.BlessingofSacrificeRank2) then _BlessingofSacrifice = Prot_Ability.BlessingofSacrificeRank2; end
-
-if IsSpellKnown(Prot_Ability.BlessingofSanctuaryRank4) then _BlessingofSanctuary = Prot_Ability.BlessingofSanctuaryRank4;
-elseif IsSpellKnown(Prot_Ability.BlessingofSanctuaryRank3) then _BlessingofSanctuary = Prot_Ability.BlessingofSanctuaryRank3;	
-elseif IsSpellKnown(Prot_Ability.BlessingofSanctuaryRank2) then _BlessingofSanctuary = Prot_Ability.BlessingofSanctuaryRank2; end
-
-if IsSpellKnown(Prot_Ability.DivineProtectionRank2) then _DivineProtection = Prot_Ability.DivineProtectionRank2; end
-
-if IsSpellKnown(Prot_Ability.DivineShieldRank2) then _DivineShield = Prot_Ability.DivineShieldRank2; end
-
-if IsSpellKnown(Prot_Ability.HammerofJusticeRank4) then _HammerofJustice = Prot_Ability.HammerofJusticeRank4;
-elseif IsSpellKnown(Prot_Ability.HammerofJusticeRank3) then _HammerofJustice = Prot_Ability.HammerofJusticeRank3;
-elseif IsSpellKnown(Prot_Ability.HammerofJusticeRank2) then _HammerofJustice = Prot_Ability.HammerofJusticeRank2; end
-
-if IsSpellKnown(Prot_Ability.HolyShieldRank3) then _HolyShield = Prot_Ability.HolyShieldRank3;	
-elseif IsSpellKnown(Prot_Ability.HolyShieldRank2) then _HolyShield = Prot_Ability.HolyShieldRank2; end
-
---Retribution
-if IsSpellKnown(Ret_Ability.BlessingofMightRank6) then _BlessingofMight = Ret_Ability.BlessingofMightRank6;
-elseif IsSpellKnown(Ret_Ability.BlessingofMightRank5) then _BlessingofMight = Ret_Ability.BlessingofMightRank5;
-elseif IsSpellKnown(Ret_Ability.BlessingofMightRank4) then _BlessingofMight = Ret_Ability.BlessingofMightRank4;
-elseif IsSpellKnown(Ret_Ability.BlessingofMightRank3) then _BlessingofMight = Ret_Ability.BlessingofMightRank3;	
-elseif IsSpellKnown(Ret_Ability.BlessingofMightRank2) then _BlessingofMight = Ret_Ability.BlessingofMightRank2; end
-
-if IsSpellKnown(Ret_Ability.GreaterBlessingofMightRank2) then _GreaterBlessingofMight = Ret_Ability.GreaterBlessingofMightRank2; end
-
-if IsSpellKnown(Ret_Ability.SealofCommandRank5) then _SealofCommand = Ret_Ability.SealofCommandRank5;
-elseif IsSpellKnown(Ret_Ability.SealofCommandRank4) then _SealofCommand = Ret_Ability.SealofCommandRank4;
-elseif IsSpellKnown(Ret_Ability.SealofCommandRank3) then _SealofCommand = Ret_Ability.SealofCommandRank3;	
-elseif IsSpellKnown(Ret_Ability.SealofCommandRank2) then _SealofCommand = Ret_Ability.SealofCommandRank2; end
-
-if IsSpellKnown(Ret_Ability.SealoftheCrusaderRank6) then _SealoftheCrusader = Ret_Ability.SealoftheCrusaderRank6; _JudgementoftheCrusaderDEBUFF = Target_Debuff.JudgementoftheCrusaderRank6;
-elseif IsSpellKnown(Ret_Ability.SealoftheCrusaderRank5) then _SealoftheCrusader = Ret_Ability.SealoftheCrusaderRank5; _JudgementoftheCrusaderDEBUFF = Target_Debuff.JudgementoftheCrusaderRank5;
-elseif IsSpellKnown(Ret_Ability.SealoftheCrusaderRank4) then _SealoftheCrusader = Ret_Ability.SealoftheCrusaderRank4; _JudgementoftheCrusaderDEBUFF = Target_Debuff.JudgementoftheCrusaderRank4;
-elseif IsSpellKnown(Ret_Ability.SealoftheCrusaderRank3) then _SealoftheCrusader = Ret_Ability.SealoftheCrusaderRank3; _JudgementoftheCrusaderDEBUFF = Target_Debuff.JudgementoftheCrusaderRank3;	
-elseif IsSpellKnown(Ret_Ability.SealoftheCrusaderRank2) then _SealoftheCrusader = Ret_Ability.SealoftheCrusaderRank2; _JudgementoftheCrusaderDEBUFF = Target_Debuff.JudgementoftheCrusaderRank2; end
-
---Auras
---Holy
---Protection
-if IsSpellKnown(Player_Auras.DevotionAuraRank7) then _DevotionAura = Player_Auras.DevotionAuraRank7;
-elseif IsSpellKnown(Player_Auras.DevotionAuraRank6) then _DevotionAura = Player_Auras.DevotionAuraRank6;
-elseif IsSpellKnown(Player_Auras.DevotionAuraRank5) then _DevotionAura = Player_Auras.DevotionAuraRank5;
-elseif IsSpellKnown(Player_Auras.DevotionAuraRank4) then _DevotionAura = Player_Auras.DevotionAuraRank4;
-elseif IsSpellKnown(Player_Auras.DevotionAuraRank3) then _DevotionAura = Player_Auras.DevotionAuraRank3;	
-elseif IsSpellKnown(Player_Auras.DevotionAuraRank2) then _DevotionAura = Player_Auras.DevotionAuraRank2; end
-
-if IsSpellKnown(Player_Auras.FireResistanceAuraRank3) then _FireResistanceAura = Player_Auras.FireResistanceAuraRank3;
-elseif IsSpellKnown(Player_Auras.FireResistanceAuraRank2) then _FireResistanceAura = Player_Auras.FireResistanceAuraRank2; end
-
-if IsSpellKnown(Player_Auras.FrostResistanceAuraRank3) then _FrostResistanceAura = Player_Auras.FrostResistanceAuraRank3;	
-elseif IsSpellKnown(Player_Auras.FrostResistanceAuraRank2) then _FrostResistanceAura = Player_Auras.FrostResistanceAuraRank2; end
-
-if IsSpellKnown(Player_Auras.ShadowResistanceAuraRank3) then _ShadowResistanceAura = Player_Auras.ShadowResistanceAuraRank3;	
-elseif IsSpellKnown(Player_Auras.ShadowResistanceAuraRank2) then _ShadowResistanceAura = Player_Auras.ShadowResistanceAuraRank2; end	
-
---Retribution
-if IsSpellKnown(Player_Auras.RetributionAuraRank5) then _RetributionAura = Player_Auras.RetributionAuraRank5;
-elseif IsSpellKnown(Player_Auras.RetributionAuraRank4) then _RetributionAura = Player_Auras.RetributionAuraRank4;
-elseif IsSpellKnown(Player_Auras.RetributionAuraRank3) then _RetributionAura = Player_Auras.RetributionAuraRank3;	
-elseif IsSpellKnown(Player_Auras.RetributionAuraRank2) then _RetributionAura = Player_Auras.RetributionAuraRank2; end	
-
-
-ids.optionMaxIds = {
-	--Holy
-	BlessingofLight = _BlessingofLight,
-	BlessingofWisdom = _BlessingofWisdom,
-	Consecration = _Consecration,
-	Exorcism = _Exorcism,
-	FlashofLight = _FlashofLight,
-	GreaterBlessingofWisdom = _GreaterBlessingofWisdom,
-	HammerofWrath = _HammerofWrath,
-	HolyLight = _HolyLight,
-	HolyShock = _HolyShock,
-	HolyWrath = _HolyWrath,
-	LayonHands = _LayonHands,
-	Redemption = _Redemption,
-	SealofLight = _SealofLight,
-	SealofRighteousness = _SealofRighteousness,
-	SealofWisdom = _SealofWisdom,
-	TurnUndead = _TurnUndead,
-	--Protection
-	BlessingofKings = _BlessingofKings,
-	BlessingofProtection = _BlessingofProtection,
-	BlessingofSacrifice = _BlessingofSacrifice,
-	BlessingofSanctuary = _BlessingofSanctuary,
-	DivineProtection = _DivineProtection,
-	DivineShield = _DivineShield,
-	GreaterBlessingofKings = _GreaterBlessingofKings,
-	GreaterBlessingofSalvation = _GreaterBlessingofSalvation,
-	GreaterBlessingofSanctuary = _GreaterBlessingofSanctuary,
-	HammerofJustice = _HammerofJustice,
-	HammeroftheRighteous = _HammeroftheRighteous,
-	BlessingofSalvation = _BlessingofSalvation,
-	HolyShield = _HolyShield,
-	RighteousFury = _RighteousFury,
-	SealofJustice = _SealofJustice,
-	--Retribution
-	BlessingofMight = _BlessingofMight,
-	GreaterBlessingofMight = _GreaterBlessingofMight,
-	SealofCommand = _SealofCommand,
-	SealoftheCrusader = _SealoftheCrusader,
-	--Auras
-	ConcentrationAura = _ConcentrationAura,
-	DevotionAura = _DevotionAura,
-	FireResistanceAura = _FireResistanceAura,
-	FrostResistanceAura = _FrostResistanceAura,
-	SanctityAura = _SanctityAura,
-	ShadowResistanceAura = _ShadowResistanceAura,
-	RetributionAura = _RetributionAura,
-	--Runes
-	DivineStorm = _DivineStorm,
-	HornofLordaeron = _HornofLordaeron,
-	SealofMartyrdom = _SealofMartyrdom,
-	BeaconofLight = _BeaconofLight,
-	CrusaderStrike = _CrusaderStrike,
-	InspirationExemplar = _InspirationExemplar,
-	HandofReckoning = _HandofReckoning,
-	AvengersShield = _AvengersShield,
-	DivineSacrifice = _DivineSacrifice,
---	Rebuke = _Rebuke,
-}
+	_Perception, _Perception_RDY = ConROC:AbilityReady(Racial.Perception, timeShift);
 end
-ConROC:UpdateSpellID()
 
-function ConROC:EnableRotationModule()
-	self.Description = "Paladin";
-	self.NextSpell = ConROC.Paladin.Damage;
-
-	self:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED');
-	self.lastSpellId = 0;
-
-	ConROC:SpellmenuClass();
---	ConROCSpellmenuFrame:Hide();
-end
 function ConROC:PLAYER_TALENT_UPDATE()
 	ConROC:SpecUpdate();
     ConROC:closeSpellmenu();
 end
 
 function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
-ConROC:UpdateSpellID()
---Character
-	local plvl 												= UnitLevel('player');
---Racials
+	ConROC:UpdateSpellID();
+	ConROC:Stats();
 
---Resources
-	local mana 												= UnitPower('player', Enum.PowerType.Mana);
-	local manaMax 											= UnitPowerMax('player', Enum.PowerType.Mana);
- 
 --Abilities	
-	local boMight											= ConROC:AbilityReady(_BlessingofMight, timeShift);
-		local bomBuff											= ConROC:Buff(_BlessingofMight, timeShift);	
-	local boWisdom											= ConROC:AbilityReady(_BlessingofWisdom, timeShift);
-		local bowBuff											= ConROC:Buff(_BlessingofWisdom, timeShift);	
-	local boKings											= ConROC:AbilityReady(_BlessingofKings, timeShift);
-		local bokBuff											= ConROC:Buff(_BlessingofKings, timeShift);	
-	local gBoKings											= ConROC:AbilityReady(_GreaterBlessingofKings, timeShift);
-		local gBokBuff											= ConROC:Buff(_GreaterBlessingofKings, timeShift);	
-	local boSalv											= ConROC:AbilityReady(_BlessingofSalvation, timeShift);
-		local bosBuff											= ConROC:Buff(_BlessingofSalvation, timeShift);	
-	local consecRDY 										= ConROC:AbilityReady(_Consecration, timeShift);
-		local consecDUR 										= consecEXP - GetTime();
-	local hWrathRDY 										= ConROC:AbilityReady(_HolyWrath, timeShift);
-	local hShieldRDY 										= ConROC:AbilityReady(_HolyShield, timeShift);
-		local hShieldBUFF, hShieldCount, hShieldDUR				= ConROC:Buff(_HolyShield, timeShift);
-		local incBlockBUFF, _, incBlockDUR						= ConROC:Buff(Player_Buff.IncreasedBlock)
-	local gBoSalv											= ConROC:AbilityReady(_GreaterBlessingofSalvation, timeShift);
-		local gBosBuff											= ConROC:Buff(_GreaterBlessingofSalvation, timeShift);	
-	local boSanc											= ConROC:AbilityReady(_BlessingofSanctuary, timeShift);
-		local bosaBuff											= ConROC:Buff(_BlessingofSanctuary, timeShift);	
-	if ConROC:TalentChosen(Spec.Protection, Prot_Talent.BlessingofSanctuary) then
-		local gBoSanc											= ConROC:AbilityReady(_GreaterBlessingofSanctuary, timeShift);
-			local gBosaBuff											= ConROC:Buff(_GreaterBlessingofSanctuary, timeShift);	
-	end
-	local boLight											= ConROC:AbilityReady(_BlessingofLight, timeShift);
-		local bolBuff											= ConROC:Buff(_BlessingofLight, timeShift);			
-	local judgement, judgeCD, judgeMCD						= ConROC:AbilityReady(Ret_Ability.Judgement, timeShift);	
-	local soCrusader										= ConROC:AbilityReady(_SealoftheCrusader, timeShift);
-		local socBuff											= ConROC:Buff(_SealoftheCrusader, timeShift);
-	local soJustice											= ConROC:AbilityReady(Prot_Ability.SealofJustice, timeShift);
-		local sojBuff											= ConROC:Buff(Prot_Ability.SealofJustice, timeShift);
-	local soLight											= ConROC:AbilityReady(_SealofLight, timeShift);
-		local solBuff											= ConROC:Buff(_SealofLight, timeShift);
-	local soWisdom											= ConROC:AbilityReady(_SealofWisdom, timeShift);
-		local sowBuff											= ConROC:Buff(_SealofWisdom, timeShift);
-	local soRighteousness									= ConROC:AbilityReady(_SealofRighteousness, timeShift);
-		local sorBuff, sorDUR									= ConROC:BuffName(_SealofRighteousness, timeShift);	
-	local soCommand											= ConROC:AbilityReady(_SealofCommand, timeShift);
-		local socomBuff, socomDUR								= ConROC:BuffName(_SealofCommand, timeShift);
-	local exorcism											= ConROC:AbilityReady(_Exorcism, timeShift);
-	local hoJustice											= ConROC:AbilityReady(_HammerofJustice, timeShift);
-		local hojDebuff = ConROC:TargetDebuff(_HammerofJustice, timeShift);
-    
+	local _BlessingofMight, _BlessingofMight_RDY = ConROC:AbilityReady(Ability.BlessingofMight, timeShift);
+		local _BlessingofMight_BUFF = ConROC:Aura(_BlessingofMight, timeShift);
+	local _BlessingofWisdom, _BlessingofWisdom_RDY = ConROC:AbilityReady(Ability.BlessingofWisdom, timeShift);
+		local _BlessingofWisdom_BUFF = ConROC:Aura(_BlessingofWisdom, timeShift);
+	local _BlessingofKings, _BlessingofKings_RDY = ConROC:AbilityReady(Ability.BlessingofKings, timeShift);
+		local _BlessingofKings_BUFF = ConROC:Aura(_BlessingofKings, timeShift);
+	local _GreaterBlessingofKings, _GreaterBlessingofKings_RDY = ConROC:AbilityReady(Ability.GreaterBlessingofKings, timeShift);
+		local _GreaterBlessingofKings_BUFF = ConROC:Aura(_GreaterBlessingofKings, timeShift);
+	local _BlessingofSalvation, _BlessingofSalvation_RDY = ConROC:AbilityReady(Ability.BlessingofSalvation, timeShift);
+		local _BlessingofSalvation_BUFF = ConROC:Aura(_BlessingofSalvation, timeShift);
+	local _Consecration, _Consecration_RDY = ConROC:AbilityReady(Ability.Consecration, timeShift);
+		local _Consecration_DUR = consecEXP - GetTime();
+	local _HolyWrath, _HolyWrath_RDY = ConROC:AbilityReady(Ability.HolyWrath, timeShift);
+	local _HolyShield, _HolyShield_RDY = ConROC:AbilityReady(Ability.HolyShield, timeShift);
+	local _GreaterBlessingofSalvation, _GreaterBlessingofSalvation_RDY = ConROC:AbilityReady(Ability.GreaterBlessingofSalvation, timeShift);
+		local _GreaterBlessingofSalvation_BUFF = ConROC:Aura(_GreaterBlessingofSalvation, timeShift);
+	local _BlessingofSanctuary, _BlessingofSanctuary_RDY = ConROC:AbilityReady(Ability.BlessingofSanctuary, timeShift);
+		local _BlessingofSanctuary_BUFF = ConROC:Aura(_BlessingofSanctuary, timeShift);
+	local _GreaterBlessingofSanctuary, _GreaterBlessingofSanctuary_RDY = ConROC:AbilityReady(Ability.GreaterBlessingofSanctuary, timeShift);
+		local _GreaterBlessingofSanctuary_BUFF = ConROC:Aura(_GreaterBlessingofSanctuary, timeShift);
+
+	local _BlessingofLight, _BlessingofLight_RDY = ConROC:AbilityReady(Ability.BlessingofLight, timeShift);
+		local _BlessingofLight_BUFF = ConROC:Aura(_BlessingofLight, timeShift);
+	local _Judgement, _Judgement_RDY, judgeCD, judgeMCD = ConROC:AbilityReady(Ability.Judgement, timeShift);
+	local _SealoftheCrusader, _SealoftheCrusader_RDY = ConROC:AbilityReady(Ability.SealoftheCrusader, timeShift);
+		local _SealoftheCrusader_BUFF = ConROC:Aura(_SealoftheCrusader, timeShift);
+		local _JudgementoftheCrusader_DEBUFF = ConROC:TargetAura(Debuff.JudgementoftheCrusader, timeShift);
+	local _SealofJustice, _SealofJustice_RDY = ConROC:AbilityReady(Ability.SealofJustice, timeShift);
+		local _SealofJustice_BUFF = ConROC:Aura(_SealofJustice, timeShift);
+		local _JudgementofJustice_DEBUFF = ConROC:TargetAura(Debuff.JudgementofJustice, timeShift);
+	local _SealofLight, _SealofLight_RDY = ConROC:AbilityReady(Ability.SealofLight, timeShift);
+		local _SealofLight_BUFF = ConROC:Aura(_SealofLight, timeShift);
+		local _JudgementofLight_DEBUFF = ConROC:TargetAura(Debuff.JudgementofLight, timeShift);
+	local _SealofWisdom, _SealofWisdom_RDY = ConROC:AbilityReady(Ability.SealofWisdom, timeShift);
+		local _SealofWisdom_BUFF = ConROC:Aura(_SealofWisdom, timeShift);
+		local _JudgementofWisdom_DEBUFF = ConROC:TargetAura(Debuff.JudgementofWisdom, timeShift);
+	local _SealofRighteousness, _SealofRighteousness_RDY = ConROC:AbilityReady(Ability.SealofRighteousness, timeShift);
+		local _SealofRighteousness_BUFF, _, _SealofRighteousness_DUR, _SealofRighteousness_UP = ConROC:Aura(_SealofRighteousness, timeShift);
+	local _SealofCommand, _SealofCommand_RDY = ConROC:AbilityReady(Ability.SealofCommand, timeShift);
+		local _, _, _SealofCommand_DUR, _SealofCommand_UP = ConROC:Aura(_SealofCommand, timeShift);
+	local _Exorcism, _Exorcism_RDY = ConROC:AbilityReady(Ability.Exorcism, timeShift);
+	local _HammerofJustice, _HammerofJustice_RDY = ConROC:AbilityReady(Ability.HammerofJustice, timeShift);
+
     local judgeDebuff = {
-		joc = ConROC:TargetDebuff(_JudgementoftheCrusaderDEBUFF, timeShift);
-        joj = ConROC:TargetDebuff(Target_Debuff.JudgementofJustice, timeShift);
-		jol	= ConROC:TargetDebuff(_JudgementofLightDEBUFF, timeShift);
-        jow	= ConROC:TargetDebuff(_JudgementofWisdomDEBUFF, timeShift);
-    }	
+		_JudgementoftheCrusader_DEBUFF,
+        _JudgementofJustice_DEBUFF,
+		_JudgementofLight_DEBUFF,
+        _JudgementofWisdom_DEBUFF,
+    }
 
 	local judgeUp = false;
 		for k, v in pairs(judgeDebuff) do
@@ -412,183 +158,174 @@ ConROC:UpdateSpellID()
 			end
 		end
 
-	--Runes
-	local dStormRDY											= ConROC:AbilityReady(_DivineStorm, timeShift);
-	local hofLRDY											= ConROC:AbilityReady(_HornofLordaeron, timeShift);
-	local sofMRDY											= ConROC:AbilityReady(_SealofMartyrdom, timeShift);
-		local sofMBUFF, sofMDUR 								=ConROC:BuffName(_SealofMartyrdom, timeShift);
-	local bofLRDY											= ConROC:AbilityReady(_BeaconofLight, timeShift);
-	local cStrikeRDY										= ConROC:AbilityReady(_CrusaderStrike, timeShift);
-	local inspExemplarRDY									= ConROC:AbilityReady(_InspirationExemplar, timeShift);
-	local hofRecRDY											= ConROC:AbilityReady(_HandofReckoning, timeShift);
-	local aShieldRDY										= ConROC:AbilityReady(_AvengersShield, timeShift);
-	local dSacrificeRDY										= ConROC:AbilityReady(_DivineSacrifice, timeShift);
-	local rebukeRDY											= ConROC:AbilityReady(_Rebuke, timeShift);
- 
-		
+--Runes
+	local _DivineStorm, _DivineStorm_RDY = ConROC:AbilityReady(Runes.DivineStorm, timeShift);
+	local _HornofLordaeron, _HornofLordaeron_RDY = ConROC:AbilityReady(Runes.HornofLordaeron, timeShift);
+	local _SealofMartyrdom, _SealofMartyrdom_RDY = ConROC:AbilityReady(Runes.SealofMartyrdom, timeShift);
+		local _, _, _SealofMartyrdom_DUR, _SealofMartyrdom_UP = ConROC:Aura(Buff.SealofMartyrdom, timeShift);
+	local _BeaconofLight, _BeaconofLight_RDY = ConROC:AbilityReady(Runes.BeaconofLight, timeShift);
+	local _CrusaderStrike, _CrusaderStrike_RDY = ConROC:AbilityReady(Runes.CrusaderStrike, timeShift);
+	local _InspirationExemplar, _InspirationExemplar_RDY = ConROC:AbilityReady(Runes.InspirationExemplar, timeShift);
+	local _HandofReckoning, _HandofReckoning_RDY = ConROC:AbilityReady(Runes.HandofReckoning, timeShift);
+	local _AvengersShield, _AvengersShield_RDY = ConROC:AbilityReady(Runes.AvengersShield, timeShift);
+	local _Rebuke, _Rebuke_RDY = ConROC:AbilityReady(Runes.Rebuke, timeShift);
+
 --Conditions
-	local knowMartyrdom										= IsSpellKnownOrOverridesKnown(_SealofMartyrdom)
-	local isExorcist										= IsSpellKnownOrOverridesKnown(ids.Runes.Exorcist)
-	local incombat 											= UnitAffectingCombat('player');	
-	local isEnemy 											= ConROC:TarHostile();
-	local isAutoAttacking 									= IsPlayerAttacking("target");
-	local Close 											= ConROC:IsMeleeRange()--CheckInteractDistance("target", 3);
-	local tarInMelee										= 0;
-	local tarInAoe											= 0;
+	local knowMartyrdom = IsSpellKnownOrOverridesKnown(_SealofMartyrdom)
+	local isExorcist = IsSpellKnownOrOverridesKnown(ids.Runes.Exorcist)
+	local isAutoAttacking = IsPlayerAttacking("target");
+	local tarInMelee, inMelee = ConROC:Targets("Melee");
+	local tarInAoe = 0;
 	local twohandIDs = {1,5,6,8,10} --Two-Handed Axes, Two-Handed Maces, Polearms, Two-Handed Swords, Saves
 	local has2HandID = ConROC:Equipped(twohandIDs, "MAINHANDSLOT")
 
-	if IsSpellKnown(_autoAttack) then
-		tarInMelee = ConROC:Targets(_autoAttack);
-	end
 	if ConROC_AoEButton:IsVisible() and IsSpellKnown(_Consecration) then
 		tarInAoe = ConROC:Targets(_Consecration);
 	end
+
 --Indicators	
-	ConROC:AbilityRaidBuffs(_BlessingofMight, ConROC:CheckBox(ConROC_SM_Bless_Might) and boMight and not bomBuff);	
-	ConROC:AbilityRaidBuffs(_BlessingofWisdom, ConROC:CheckBox(ConROC_SM_Bless_Wisdom) and boWisdom and not bowBuff);	
-	ConROC:AbilityRaidBuffs(_BlessingofKings, ConROC:CheckBox(ConROC_SM_Bless_Kings) and boKings and not bokBuff);	
-	ConROC:AbilityRaidBuffs(_GreaterBlessingofKings, ConROC:CheckBox(ConROC_SM_Bless_GreaterKings) and gBoKings and not gBokBuff);	
-	ConROC:AbilityRaidBuffs(_BlessingofSalvation, ConROC:CheckBox(ConROC_SM_Bless_Salvation) and boSalv and not bosBuff);	
-	ConROC:AbilityRaidBuffs(_GreaterBlessingofSalvation, ConROC:CheckBox(ConROC_SM_Bless_GreaterSalvation) and gBoSalv and not gBosBuff);	
-	ConROC:AbilityRaidBuffs(_BlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_Sanctuary) and gBoSanc and not gBosaBuff);	
-	if ConROC:TalentChosen(Spec.Protection, Prot_Talent.BlessingofSanctuary) then
-		ConROC:AbilityRaidBuffs(_GreaterBlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_GreaterSanctuary) and gBoSanc and not gBosaBuff);
-	end
-	ConROC:AbilityRaidBuffs(_BlessingofLight, ConROC:CheckBox(ConROC_SM_Bless_Light) and boLight and not bolBuff);
-    
-    ConROC:AbilityInterrupt(_Rebuke, ConROC:Interrupt() and rebukeRDY)
-	
+	ConROC:AbilityRaidBuffs(_BlessingofMight, ConROC:CheckBox(ConROC_SM_Bless_Might) and _BlessingofMight_RDY and not _BlessingofMight_BUFF);
+	ConROC:AbilityRaidBuffs(_BlessingofWisdom, ConROC:CheckBox(ConROC_SM_Bless_Wisdom) and _BlessingofWisdom_RDY and not _BlessingofWisdom_BUFF);
+	ConROC:AbilityRaidBuffs(_BlessingofKings, ConROC:CheckBox(ConROC_SM_Bless_Kings) and _BlessingofKings_RDY and not _BlessingofKings_BUFF);
+	ConROC:AbilityRaidBuffs(_GreaterBlessingofKings, ConROC:CheckBox(ConROC_SM_Bless_GreaterKings) and _GreaterBlessingofKings_RDY and not _GreaterBlessingofKings_BUFF);
+	ConROC:AbilityRaidBuffs(_BlessingofSalvation, ConROC:CheckBox(ConROC_SM_Bless_Salvation) and _BlessingofSalvation_RDY and not _BlessingofSalvation_BUFF);
+	ConROC:AbilityRaidBuffs(_GreaterBlessingofSalvation, ConROC:CheckBox(ConROC_SM_Bless_GreaterSalvation) and _GreaterBlessingofSalvation_RDY and not _GreaterBlessingofSalvation_BUFF);
+	ConROC:AbilityRaidBuffs(_BlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_Sanctuary) and _GreaterBlessingofSanctuary_RDY and not _GreaterBlessingofSanctuary_BUFF);
+	ConROC:AbilityRaidBuffs(_GreaterBlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_GreaterSanctuary) and _GreaterBlessingofSanctuary_RDY and not _GreaterBlessingofSanctuary_BUFF);
+	ConROC:AbilityRaidBuffs(_BlessingofLight, ConROC:CheckBox(ConROC_SM_Bless_Light) and _BlessingofLight_RDY and not _BlessingofLight_BUFF);
+
+    ConROC:AbilityInterrupt(_Rebuke, ConROC:Interrupt() and _Rebuke_RDY)
+
 --Warnings
-	
+
 --Rotations
-	if ConROC.Seasons.IsSoD then
+	--[[if ConROC.Seasons.IsSoD then
 		if ConROC:CheckBox(ConROC_SM_Role_Melee) or (ConROC:CheckBox(ConROC_SM_Role_Healer) and ConROC:TarHostile()) then
 			if not ConROC_AoEButton:IsVisible() then
-				if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and soCrusader and not socBuff and not judgeDebuff.joc and (judgeCD >= judgeMCD - 1) then
+				if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
 					return _SealoftheCrusader;
 				end
-				if judgement and not judgeUp and socBuff then
+				if _Judgement_RDY and not judgeUp and _SealoftheCrusader_BUFF then
 					return Ret_Ability.Judgement;
 				end
 			end
 
-			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and soRighteousness and (not sorBuff or sorDUR <= 2) and not (socBuff or sofMBUFF) then
+			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and (not _SealofRighteousness_UP or _SealofRighteousness_DUR <= 2) and not (_SealoftheCrusader_BUFF or _SealofMartyrdom_UP) then
 				return _SealofRighteousness;
 			end
-			if ConROC:CheckBox(ConROC_SM_Seal_Command) and soCommand and not socomBuff then
+			if ConROC:CheckBox(ConROC_SM_Seal_Command) and _SealofCommand_RDY and not _SealofCommand_UP then
 				return _SealofCommand;
 			end
-			if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and soCrusader and not socBuff and not judgeDebuff.joc and (judgeCD >= judgeMCD - 1) then
+			if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
 				return _SealoftheCrusader;
 			end
 
-			if ConROC:CheckBox(ConROC_SM_Seal_Justice) and soJustice and not sojBuff and not judgeDebuff.joj and (judgeCD >= judgeMCD - 1) then
+			if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
 				return Prot_Ability.SealofJustice;
 			end
 			
-			if ConROC:CheckBox(ConROC_SM_Seal_Light) and soLight and not solBuff and not judgeDebuff.jol and (judgeCD >= judgeMCD - 1) then
+			if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
 				return _SealofLight;
 			end	
 			
-			if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and soWisdom and not sowBuff and not judgeDebuff.jow and (judgeCD >= judgeMCD - 1) then
+			if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
 				return _SealofWisdom;
 			end
-			if dStormRDY then
+			if _DivineStorm_RDY then
 				return _DivineStormRDY
 			end
-			if cStrikeRDY then
+			if _CrusaderStrike_RDY then
 				return _CrusaderStrike
 			end
-			if exorcism and (ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon") or isExorcist ) then
+			if _Exorcism_RDY and (ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon") or isExorcist ) then
 				return _Exorcism;
 			end
-			if judgement and not judgeUp then
+			if _Judgement_RDY and not judgeUp then
 				return Ret_Ability.Judgement;
 			end
 		end
 		if ConROC:CheckBox(ConROC_SM_Role_Tank) then		
-			if soCommand and not socomBuff and not knowMartyrdom then
+			if _SealofCommand_RDY and not _SealofCommand_UP and not knowMartyrdom then
 				return _SealofCommand;
 			end
-			if sofMRDY and knowMartyrdom and not sofMBUFF then
+			if _SealofMartyrdom_RDY and knowMartyrdom and not _SealofMartyrdom_UP then
 				return _SealofMartyrdom
 			end
-			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and soRighteousness and (not sorBuff or sorDUR <= 2) and not (socBuff or sofMBUFF) then
+			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and (not _SealofRighteousness_UP or _SealofRighteousness_DUR <= 2) and not (_SealoftheCrusader_BUFF or _SealofMartyrdom_UP) then
 				return _SealofRighteousness;
 			end
-			if aShieldRDY then
+			if _AvengersShield_RDY then
 				return _AvengersShield
 			end
-			if isExorcist and exorcism then
+			if isExorcist and _Exorcism_RDY then
 				return _Exorcism
 			end
-			if judgement and not judgeUp then
+			if _Judgement_RDY and not judgeUp then
 				return Ret_Ability.Judgement;
 			end
-			if dStormRDY then
+			if _DivineStorm_RDY then
 				return _DivineStormRDY
 			end
-			if consecRDY then
+			if _Consecration_RDY then
 				return _Consecration
 			end
 		end
 		return nil
-	end
+	end]]
 	if (currentSpecID == ids.Spec.Holy and ConROC:TarHostile()) or (not currentSpecID == ids.Spec.Holy or not currentSpecID) then
-		if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and soCrusader and not socBuff and not judgeDebuff.joc and (judgeCD >= judgeMCD - 1) then
+		if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
 			return _SealoftheCrusader;
 		end
 
-		if ConROC:CheckBox(ConROC_SM_Judgement_Justice) and soJustice and not sojBuff and not judgeDebuff.joj and (judgeCD >= judgeMCD - 1) then
-			return Prot_Ability.SealofJustice;
+		if ConROC:CheckBox(ConROC_SM_Judgement_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
+			return _SealofJustice;
 		end
-		
-		if ConROC:CheckBox(ConROC_SM_Judgement_Light) and soLight and not solBuff and not judgeDebuff.jol and (judgeCD >= judgeMCD - 1) then
-			return _SealofLight;
-		end	
-		
-		if ConROC:CheckBox(ConROC_SM_Judgement_Wisdom) and soWisdom and not sowBuff and not judgeDebuff.jow and (judgeCD >= judgeMCD - 1) then
-			return _SealofWisdom;
-		end	
-		
-		if judgement and not judgeUp then
-			return Ret_Ability.Judgement;
-		end	
 
-		if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and soRighteousness and (not sorBuff or sorDUR <= 2) then
+		if ConROC:CheckBox(ConROC_SM_Judgement_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
+			return _SealofLight;
+		end
+
+		if ConROC:CheckBox(ConROC_SM_Judgement_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
+			return _SealofWisdom;
+		end
+
+		if _Judgement_RDY and not judgeUp then
+			return _Judgement;
+		end
+
+		if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and not _SealofRighteousness_BUFF then
 			return _SealofRighteousness;
 		end
-		
-		if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and soCrusader and not socBuff then
+
+		if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF then
 			return _SealoftheCrusader;
 		end
 
-		if ConROC:CheckBox(ConROC_SM_Seal_Command) and soCommand and not socomBuff then
+		if ConROC:CheckBox(ConROC_SM_Seal_Command) and _SealofCommand_RDY and not _SealofCommand_UP then
 			return _SealofCommand;
-		end	
-			
-		if ConROC:CheckBox(ConROC_SM_Seal_Justice) and soJustice and not sojBuff then
-			return Prot_Ability.SealofJustice;
 		end
-		
-		if ConROC:CheckBox(ConROC_SM_Seal_Light) and soLight and not solBuff then
+
+		if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF then
+			return _SealofJustice;
+		end
+
+		if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF then
 			return _SealofLight;
-		end	
-		
-		if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and soWisdom and not sowBuff then
+		end
+
+		if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF then
 			return _SealofWisdom;
-		end	
-		
-		if ConROC:CheckBox(ConROC_SM_Stun_HammerofJustice) and hoJustice and judgement then
+		end
+
+		if ConROC:CheckBox(ConROC_SM_Stun_HammerofJustice) and _HammerofJustice_RDY and _Judgement_RDY then
 			return _HammerofJustice;
 		end
 
-		if judgement and (socomBuff or sorBuff) then
-			return Ret_Ability.Judgement;
+		if _Judgement_RDY and (_SealofCommand_UP or _SealofRighteousness_UP) then
+			return _Judgement;
 		end
-		
-		if exorcism and (ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon")) then
+
+		if _Exorcism_RDY and (ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon")) then
 			return _Exorcism;
 		end
 	end
@@ -604,63 +341,54 @@ ConROC:UpdateSpellID()
 end
 
 function ConROC.Paladin.Defense(_, timeShift, currentSpell, gcd)
---Character
-	local plvl 												= UnitLevel('player');
-	
---Racials
-
---Resources
-	local mana 												= UnitPower('player', Enum.PowerType.Mana);
-	local manaMax 											= UnitPowerMax('player', Enum.PowerType.Mana);
+	ConROC:UpdateSpellID();
+	ConROC:Stats();
 
 --Abilities	
-	local dAura												= ConROC:AbilityReady(_DevotionAura, timeShift);
-		local daBuff											= ConROC:Form(_DevotionAura);
-	local rAura												= ConROC:AbilityReady(_RetributionAura, timeShift);
-		local raBuff											= ConROC:Form(_RetributionAura);
-	local cAura												= ConROC:AbilityReady(_ConcentrationAura, timeShift);
-		local caBuff											= ConROC:Form(_ConcentrationAura);
-	local sAura												= ConROC:AbilityReady(_SanctityAura, timeShift);
-		local saBuff											= ConROC:Form(_SanctityAura);
-	local fRAura											= ConROC:AbilityReady(_FireResistanceAura, timeShift);
-		local fRBuff											= ConROC:Form(_FireResistanceAura);
-	local frRAura											= ConROC:AbilityReady(_FrostResistanceAura, timeShift);
-		local frRBuff											= ConROC:Form(_FrostResistanceAura);
-	local shaAura											= ConROC:AbilityReady(_ShadowResistanceAura, timeShift);
-		local shaBuff											= ConROC:Form(_ShadowResistanceAura);
-		
---Conditions
-	local playerPh 											= ConROC:PercentHealth('player');
+	local _DevotionAura, _DevotionAura_RDY = ConROC:AbilityReady(Ability.DevotionAura, timeShift);
+		local _DevotionAura_FORM = ConROC:Form(_DevotionAura);
+	local _RetributionAura, _RetributionAura_RDY = ConROC:AbilityReady(Ability.RetributionAura, timeShift);
+		local _RetributionAura_FORM = ConROC:Form(_RetributionAura);
+	local _ConcentrationAura, _ConcentrationAura_RDY = ConROC:AbilityReady(Ability.ConcentrationAura, timeShift);
+		local _ConcentrationAura_FORM = ConROC:Form(_ConcentrationAura);
+	local _SanctityAura, _SanctityAura_RDY = ConROC:AbilityReady(Ability.SanctityAura, timeShift);
+		local _SanctityAura_FORM = ConROC:Form(_SanctityAura);
+	local _FireResistanceAura, _FireResistanceAura_RDY = ConROC:AbilityReady(Ability.FireResistanceAura, timeShift);
+		local _FireResistanceAura_FORM = ConROC:Form(_FireResistanceAura);
+	local _FrostResistanceAura, _FrostResistanceAura_RDY = ConROC:AbilityReady(Ability.FrostResistanceAura, timeShift);
+		local _FrostResistanceAura_FORM = ConROC:Form(_FrostResistanceAura);
+	local _ShadowResistanceAura, _ShadowResistanceAura_RDY = ConROC:AbilityReady(Ability.ShadowResistanceAura, timeShift);
+		local _ShadowResistanceAura_FORM = ConROC:Form(_ShadowResistanceAura);
 
 --Rotations
-	if dAura and not daBuff and ConROC:CheckBox(ConROC_SM_Aura_Devotion) then
+	if _DevotionAura_RDY and not _DevotionAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Devotion) then
 		return _DevotionAura;
 	end
-	
-	if rAura and not raBuff and ConROC:CheckBox(ConROC_SM_Aura_Retribution) then
+
+	if _RetributionAura_RDY and not _RetributionAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Retribution) then
 		return _RetributionAura;
 	end
-	
-	if cAura and not caBuff and ConROC:CheckBox(ConROC_SM_Aura_Concentration) then
+
+	if _ConcentrationAura_RDY and not _ConcentrationAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Concentration) then
 		return _ConcentrationAura;
 	end
-	
-	if sAura and not saBuff and ConROC:CheckBox(ConROC_SM_Aura_Sanctity) then
+
+	if _SanctityAura_RDY and not _SanctityAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Sanctity) then
 		return _SanctityAura;
 	end
-	
-	if fRAura and not fRBuff and ConROC:CheckBox(ConROC_SM_Aura_FireResistance) then
+
+	if _FireResistanceAura_RDY and not _FireResistanceAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_FireResistance) then
 		return _FireResistanceAura;
 	end
-	
-	if frRAura and not frRBuff and ConROC:CheckBox(ConROC_SM_Aura_FrostResistance) then
+
+	if _FrostResistanceAura_RDY and not _FrostResistanceAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_FrostResistance) then
 		return _FrostResistanceAura;
 	end
-	
-	if shaAura and not shaBuff and ConROC:CheckBox(ConROC_SM_Aura_ShadowResistance) then
+
+	if _ShadowResistanceAura_RDY and not _ShadowResistanceAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_ShadowResistance) then
 		return _ShadowResistanceAura;
 	end
-	
+
 	return nil;
 end
 
