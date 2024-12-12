@@ -199,7 +199,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 --Warnings
 
 --Rotations
-	--[[if ConROC.Seasons.IsSoD then
+	if ConROC.Seasons.IsSoD then
 		if ConROC:CheckBox(ConROC_SM_Role_Melee) or (ConROC:CheckBox(ConROC_SM_Role_Healer) and ConROC:TarHostile()) then
 			if not ConROC_AoEButton:IsVisible() then
 				if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
@@ -223,11 +223,11 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 			if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
 				return Prot_Ability.SealofJustice;
 			end
-			
+
 			if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
 				return _SealofLight;
-			end	
-			
+			end
+
 			if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
 				return _SealofWisdom;
 			end
@@ -244,7 +244,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 				return Ret_Ability.Judgement;
 			end
 		end
-		if ConROC:CheckBox(ConROC_SM_Role_Tank) then		
+		if ConROC:CheckBox(ConROC_SM_Role_Tank) then
 			if _SealofCommand_RDY and not _SealofCommand_UP and not knowMartyrdom then
 				return _SealofCommand;
 			end
@@ -271,7 +271,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 			end
 		end
 		return nil
-	end]]
+	end
 	if (currentSpecID == ids.Spec.Holy and ConROC:TarHostile()) or (not currentSpecID == ids.Spec.Holy or not currentSpecID) then
 		if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
 			return _SealoftheCrusader;
