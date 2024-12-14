@@ -57,10 +57,10 @@ local _Mana, _Mana_Max = ConROC:PlayerPower('Mana');
 --Conditions
 local _Queue = 0;
 local _is__is_moving = ConROC:PlayerSpeed();
---local _enemies_in_melee, _target_in_melee = ConROC:Targets("Melee");
---local _enemies_in_10yrds, _target_in_10yrds = ConROC:Targets("10");
---local _enemies_in_25yrds, _target_in_25yrds = ConROC:Targets("25");
---local _enemies_in_40yrds, _target_in_40yrds = ConROC:Targets("40");
+local _enemies_in_melee, _target_in_melee = ConROC:Targets("Melee");
+local _enemies_in_10yrds, _target_in_10yrds = ConROC:Targets("10");
+local _enemies_in_20yrds, _target_in_20yrds = ConROC:Targets("20");
+local _enemies_in_40yrds, _target_in_40yrds = ConROC:Targets("40");
 local _can_Execute = _Target_Percent_Health < 20;
 
 --Racials
@@ -81,10 +81,10 @@ function ConROC:Stats()
 
 	_Queue = 0;
 	_is_moving = ConROC:PlayerSpeed();
---	_enemies_in_melee, _target_in_melee = ConRO:Targets("Melee");
---	_enemies_in_10yrds, _target_in_10yrds = ConRO:Targets("10");
---	_enemies_in_25yrds, _target_in_25yrds = ConRO:Targets("25");
---	_enemies_in_40yrds, _target_in_40yrds = ConRO:Targets("40");
+	_enemies_in_melee, _target_in_melee = ConROC:Targets("Melee");
+	_enemies_in_10yrds, _target_in_10yrds = ConROC:Targets("10");
+	_enemies_in_20yrds, _target_in_20yrds = ConROC:Targets("20");
+	_enemies_in_40yrds, _target_in_40yrds = ConROC:Targets("40");
 	_can_Execute = _Target_Percent_Health < 20;
 
 	_Perception, _Perception_RDY = ConROC:AbilityReady(Racial.Perception, timeShift);
@@ -139,7 +139,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 	local _SealofRighteousness, _SealofRighteousness_RDY = ConROC:AbilityReady(Ability.SealofRighteousness, timeShift);
 		local _SealofRighteousness_BUFF, _, _SealofRighteousness_DUR, _SealofRighteousness_UP = ConROC:Aura(_SealofRighteousness, timeShift);
 	local _SealofCommand, _SealofCommand_RDY = ConROC:AbilityReady(Ability.SealofCommand, timeShift);
-		local _, _, _SealofCommand_DUR, _SealofCommand_UP = ConROC:Aura(_SealofCommand, timeShift);
+		local _, _, _, _SealofCommand_UP = ConROC:Aura(_SealofCommand, timeShift);
 	local _Exorcism, _Exorcism_RDY = ConROC:AbilityReady(Ability.Exorcism, timeShift);
 	local _HammerofJustice, _HammerofJustice_RDY = ConROC:AbilityReady(Ability.HammerofJustice, timeShift);
 
@@ -174,14 +174,8 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 	local knowMartyrdom = IsSpellKnownOrOverridesKnown(_SealofMartyrdom)
 	local isExorcist = IsSpellKnownOrOverridesKnown(ids.Runes.Exorcist)
 	local isAutoAttacking = IsPlayerAttacking("target");
-	local tarInMelee, inMelee = ConROC:Targets("Melee");
-	local tarInAoe = 0;
 	local twohandIDs = {1,5,6,8,10} --Two-Handed Axes, Two-Handed Maces, Polearms, Two-Handed Swords, Saves
 	local has2HandID = ConROC:Equipped(twohandIDs, "MAINHANDSLOT")
-
-	if ConROC_AoEButton:IsVisible() and IsSpellKnown(_Consecration) then
-		tarInAoe = ConROC:Targets(_Consecration);
-	end
 
 --Indicators	
 	ConROC:AbilityRaidBuffs(_BlessingofMight, ConROC:CheckBox(ConROC_SM_Bless_Might) and _BlessingofMight_RDY and not _BlessingofMight_BUFF);
@@ -190,7 +184,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 	ConROC:AbilityRaidBuffs(_GreaterBlessingofKings, ConROC:CheckBox(ConROC_SM_Bless_GreaterKings) and _GreaterBlessingofKings_RDY and not _GreaterBlessingofKings_BUFF);
 	ConROC:AbilityRaidBuffs(_BlessingofSalvation, ConROC:CheckBox(ConROC_SM_Bless_Salvation) and _BlessingofSalvation_RDY and not _BlessingofSalvation_BUFF);
 	ConROC:AbilityRaidBuffs(_GreaterBlessingofSalvation, ConROC:CheckBox(ConROC_SM_Bless_GreaterSalvation) and _GreaterBlessingofSalvation_RDY and not _GreaterBlessingofSalvation_BUFF);
-	ConROC:AbilityRaidBuffs(_BlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_Sanctuary) and _GreaterBlessingofSanctuary_RDY and not _GreaterBlessingofSanctuary_BUFF);
+	ConROC:AbilityRaidBuffs(_BlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_Sanctuary) and _BlessingofSanctuary_RDY and not _BlessingofSanctuary_BUFF);
 	ConROC:AbilityRaidBuffs(_GreaterBlessingofSanctuary, ConROC:CheckBox(ConROC_SM_Bless_GreaterSanctuary) and _GreaterBlessingofSanctuary_RDY and not _GreaterBlessingofSanctuary_BUFF);
 	ConROC:AbilityRaidBuffs(_BlessingofLight, ConROC:CheckBox(ConROC_SM_Bless_Light) and _BlessingofLight_RDY and not _BlessingofLight_BUFF);
 
@@ -206,7 +200,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 					return _SealoftheCrusader;
 				end
 				if _Judgement_RDY and not judgeUp and _SealoftheCrusader_BUFF then
-					return Ret_Ability.Judgement;
+					return _Judgement;
 				end
 			end
 
@@ -221,7 +215,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 			end
 
 			if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
-				return Prot_Ability.SealofJustice;
+				return _SealofJustice;
 			end
 
 			if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
@@ -232,7 +226,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 				return _SealofWisdom;
 			end
 			if _DivineStorm_RDY then
-				return _DivineStormRDY
+				return _DivineStorm
 			end
 			if _CrusaderStrike_RDY then
 				return _CrusaderStrike
@@ -241,9 +235,10 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 				return _Exorcism;
 			end
 			if _Judgement_RDY and not judgeUp then
-				return Ret_Ability.Judgement;
+				return _Judgement;
 			end
 		end
+
 		if ConROC:CheckBox(ConROC_SM_Role_Tank) then
 			if _SealofCommand_RDY and not _SealofCommand_UP and not knowMartyrdom then
 				return _SealofCommand;
@@ -261,10 +256,10 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 				return _Exorcism
 			end
 			if _Judgement_RDY and not judgeUp then
-				return Ret_Ability.Judgement;
+				return _Judgement;
 			end
 			if _DivineStorm_RDY then
-				return _DivineStormRDY
+				return _DivineStorm
 			end
 			if _Consecration_RDY then
 				return _Consecration
@@ -272,7 +267,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 		end
 		return nil
 	end
-	if (currentSpecID == ids.Spec.Holy and ConROC:TarHostile()) or (not currentSpecID == ids.Spec.Holy or not currentSpecID) then
+	if (currentSpecID == ids.Spec.Holy and ConROC:TarHostile()) or (currentSpecID ~= ids.Spec.Holy) then
 		if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
 			return _SealoftheCrusader;
 		end

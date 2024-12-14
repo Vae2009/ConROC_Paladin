@@ -142,6 +142,7 @@ local function CheckScrollbarVisibility()
 end
 
 function ConROC:SpellmenuClass()
+	ConROC:UpdateSpellID();
 	ConROC_RoleSettingsTable = {
 		{
 			frameName = "Melee",
@@ -181,28 +182,28 @@ function ConROC:SpellmenuClass()
 	      {spellID = ids.Ability.FireResistanceAura, spellCheckbox = "Aura_FireResistance", reqLevel = 50, type="spell"},
 	    },
 	    groupType = "radioButtons"
-	  },
-	  --[[{
+		},
+		{
 	    frameName = "Judgements",
 	    spells = {
-	      {spellID = ids.Ability.JudgementoftheCrusader, spellCheckbox = "Judgement_Crusader", reqLevel = 4, type="spell"},
-	      {spellID = ids.Ability.JudgementofJustice, spellCheckbox = "Judgement_Justice", reqLevel = 8, type="spell"},
-	      {spellID = ids.Ability.JudgementofLight, spellCheckbox = "Judgement_Light", reqLevel = 26, type="spell"},
-	      {spellID = ids.Ability.JudgementofWisdom, spellCheckbox = "Judgement_Wisdom", reqLevel = 30, type="spell"}
+	      {spellID = ids.Ability.SealoftheCrusader, spellCheckbox = "Judgement_Crusader", reqLevel = 4, type="spell"},
+	      {spellID = ids.Ability.SealofJustice, spellCheckbox = "Judgement_Justice", reqLevel = 8, type="spell"},
+	      {spellID = ids.Ability.SealofLight, spellCheckbox = "Judgement_Light", reqLevel = 26, type="spell"},
+	      {spellID = ids.Ability.SealofWisdom, spellCheckbox = "Judgement_Wisdom", reqLevel = 30, type="spell"}
 	    },
 	    groupType = "radioButtons"
-	  },--]]
-	  {
+		},
+	  	{
 	    frameName = "Seals",
 	    spells = {
 	    	{spellID = ids.Ability.SealofRighteousness, spellCheckbox = "Seal_Righteousness", reqLevel = 1, type="spell"},
-	    	{spellID = ids.Ability.SealofMartyrdom, spellCheckbox = "Seal_Martyrdom", reqLevel = 1, type="spell"},
+	    	{spellID = ids.Runes.SealofMartyrdom, spellCheckbox = "Seal_Martyrdom", reqLevel = 1, type="spell"},
 	    	{spellID = ids.Ability.SealoftheCrusader, spellCheckbox = "Seal_Crusader", reqLevel = 6, type="spell"},
 	    	{spellID = ids.Ability.SealofCommand, spellCheckbox = "Seal_Command", reqLevel = 20, type="spell"},
 	    	{spellID = ids.Ability.SealofJustice, spellCheckbox = "Seal_Justice", reqLevel = 22, type="spell"},
 	    	{spellID = ids.Ability.SealofLight, spellCheckbox = "Seal_Light", reqLevel = 30, type="spell"},
 	    	{spellID = ids.Ability.SealofWisdom, spellCheckbox = "Seal_Wisdom", reqLevel = 38, type="spell"},
-	    	--{spellID = "None", spellCheckbox = "Seal_None", reqLevel = 1, type="none"}
+	    	--[[{spellID = "None", spellCheckbox = "Seal_None", reqLevel = 1, type="none"}]]
 	    },
 	    groupType = "radioButtons"
 	  },
@@ -234,7 +235,6 @@ function ConROC:SpellmenuClass()
 	    frameName = "Options",
 	    spells = {
 	    	{spellID = "AoE Toggle Button", spellCheckbox = "Option_AoE", reqLevel = 20, type="aoetoggler"},
-	    	--{spellID = "Use Wand", spellCheckbox = "Option_UseWand", reqLevel = 5, type="wand"}
 	    }
 	  }
 	}
@@ -471,7 +471,7 @@ function ConROC_OptionsWindow(_table, _roles)
                 if _table[i].groupType == "radioButtons" then
                     ConROC:OptionRadioButtonSpell(_spellData, i, j, _spellFrame, radioButtonsTable);
                 else
-                    ConROC:OptionCheckboxSpell(_spellData, i, j, _spellFrame);                  
+                    ConROC:OptionCheckboxSpell(_spellData, i, j, _spellFrame);
                 end
             elseif _spellData.type == "custom" then
                 ConROC:CustomOption(_spellData, i, j, _spellFrame);
@@ -538,7 +538,7 @@ function ConROC:OptionRadioButtonSpell(_spellData, i, j, _spellFrame, _radioButt
 	end
 	local myFrame = "ConROC_SM_".._spellData.spellCheckbox
 	local oItem = CreateFrame("CheckButton", myFrame, _spellFrame, "UIRadioButtonTemplate");
-	local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");		
+	local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
 	if j == 1 then
 		oItem:SetPoint("TOPLEFT", lastFrame, "TOPLEFT", 0, 0);
 	else
@@ -577,7 +577,7 @@ function ConROC:OptionRadioButtonSpell(_spellData, i, j, _spellFrame, _radioButt
 	c1t:SetPoint("LEFT", oItem, "RIGHT", 2, 0);
 	if type(_spellData.spellID) == "number" then
 		oItemtext:SetPoint('LEFT', c1t, 'RIGHT', 4, 0);
-	else				
+	else
 		oItemtext:SetPoint('LEFT', oItem, 'RIGHT', 26, 0);
 	end
 	_G[myFrame] = oItem
@@ -658,7 +658,7 @@ function ConROC:CustomOption(_spellData, i, j, _spellFrame)
 	oItem:SetSize(20,20)
 	ConROC:setRoleChecked(_spellData, oItem)
 
-	oItem:SetScript("OnClick", 
+	oItem:SetScript("OnClick",
 		function(self)
 			ConROC:setRoleSpellClicked(_spellData, self)
 		end);
@@ -683,7 +683,7 @@ end
 function ConROC:OptionAoE(_spellData, i, j, _spellFrame)
 	local myFrame = "ConROC_SM_".._spellData.spellCheckbox
 	local oItem = CreateFrame("CheckButton", myFrame, _spellFrame, "UICheckButtonTemplate");
-	local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");		
+	local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
 	if j == 1 then
 		oItem:SetPoint("TOPLEFT", lastFrame, "TOPLEFT", 0, 0);
 	else
@@ -739,7 +739,7 @@ function ConROC:OptionNone(_spellData, i, j, _spellFrame, _checkType, _radioButt
     else
         oItem = CreateFrame("CheckButton", myFrame, _spellFrame, "UICheckButtonTemplate");
     end
-    local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");     
+    local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
     if j == 1 then
         oItem:SetPoint("TOPLEFT", lastFrame, "TOPLEFT", 0, 0);
     else
@@ -751,7 +751,7 @@ function ConROC:OptionNone(_spellData, i, j, _spellFrame, _checkType, _radioButt
     if _checkType == "radioButtons" then
         oItem.spellCheckbox = _spellData.spellCheckbox
         _radioButtonsTable[j] = oItem;
-        oItem:SetScript("OnClick", 
+        oItem:SetScript("OnClick",
         function(self)
             local role, checkboxName, frameName = ConROC:checkActiveRole()
             for _, radioButton in ipairs(_radioButtonsTable) do
@@ -766,8 +766,8 @@ function ConROC:OptionNone(_spellData, i, j, _spellFrame, _checkType, _radioButt
             end
         end);
     else
-        oItem:SetScript("OnClick", 
-        function(self)          
+        oItem:SetScript("OnClick",
+        function(self)
             ConROC:setRoleSpellClicked(_spellData, self)
         end);
     end
