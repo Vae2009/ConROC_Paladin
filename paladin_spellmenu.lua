@@ -186,10 +186,10 @@ function ConROC:SpellmenuClass()
 		{
 	    frameName = "Judgements",
 	    spells = {
-	      {spellID = ids.Ability.SealoftheCrusader, spellCheckbox = "Judgement_Crusader", reqLevel = 4, type="spell"},
-	      {spellID = ids.Ability.SealofJustice, spellCheckbox = "Judgement_Justice", reqLevel = 8, type="spell"},
-	      {spellID = ids.Ability.SealofLight, spellCheckbox = "Judgement_Light", reqLevel = 26, type="spell"},
-	      {spellID = ids.Ability.SealofWisdom, spellCheckbox = "Judgement_Wisdom", reqLevel = 30, type="spell"}
+	      {spellID = ids.Debuff.JudgementoftheCrusader, spellCheckbox = "Judgement_Crusader", reqLevel = 6, type = "judgement", seal = ids.Ability.SealoftheCrusader},
+	      {spellID = ids.Debuff.JudgementofJustice, spellCheckbox = "Judgement_Justice", reqLevel = 22, type = "judgement", seal = ids.Ability.SealofJustice},
+	      {spellID = ids.Debuff.JudgementofLight, spellCheckbox = "Judgement_Light", reqLevel = 30, type = "judgement", seal = ids.Ability.SealofLight},
+	      {spellID = ids.Debuff.JudgementofWisdom, spellCheckbox = "Judgement_Wisdom", reqLevel = 38, type = "judgement", seal = ids.Ability.SealofWisdom}
 	    },
 	    groupType = "radioButtons"
 		},
@@ -467,7 +467,7 @@ function ConROC_OptionsWindow(_table, _roles)
         local _spells = _table[i].spells
         for j = 1, #_spells do
             local _spellData = _spells[j]
-            if _spellData.type == "spell" or _spellData.type == "poison" then
+            if _spellData.type == "spell" or _spellData.type == "judgement" then
                 if _table[i].groupType == "radioButtons" then
                     ConROC:OptionRadioButtonSpell(_spellData, i, j, _spellFrame, radioButtonsTable);
                 else
@@ -531,10 +531,14 @@ end
 function ConROC:OptionRadioButtonSpell(_spellData, i, j, _spellFrame, _radioButtonsTable)
 	--spell start
 	local spellName, _, spellTexture;
-	if type(_spellData.spellID) == "number" then
-		spellName, _, spellTexture = GetSpellInfo(_spellData.spellID)
-	else
-		spellName, spellTexture = _spellData.spellID, nil;
+	if _spellData.type == "judgement" then
+        spellName, _, spellTexture = GetSpellInfo(_spellData.spellID)
+    else
+		if type(_spellData.spellID) == "number" then
+			spellName, _, spellTexture = GetSpellInfo(_spellData.spellID)
+		else
+			spellName, spellTexture = _spellData.spellID, nil;
+		end
 	end
 	local myFrame = "ConROC_SM_".._spellData.spellCheckbox
 	local oItem = CreateFrame("CheckButton", myFrame, _spellFrame, "UIRadioButtonTemplate");
@@ -648,7 +652,7 @@ end
 function ConROC:CustomOption(_spellData, i, j, _spellFrame)
 	local spellName, _, spellTexture = GetSpellInfo(_spellData.spellID)
 	local oItem = CreateFrame("CheckButton", "ConROC_SM_".._spellData.spellCheckbox, _spellFrame, "UICheckButtonTemplate");
-	local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");		
+	local oItemtext = oItem:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
 	if j == 1 then
 		oItem:SetPoint("TOPLEFT", lastFrame, "TOPLEFT", 0, 0);
 	else
@@ -837,6 +841,30 @@ function ConROC:SpellMenuUpdate(newSpell)
 					else
 						scrollHeight = scrollHeight + math.ceil(lFrame:GetHeight());
 						spellFrameHeight = spellFrameHeight + math.ceil(oItem:GetHeight());
+					end
+				elseif _spellData.type == "judgement" then
+                    local oItem = _G["ConROC_SM_".._spellData.spellCheckbox]
+                    if j == firstItem then
+                        oItem:SetPoint("TOPLEFT", lFrame, "TOPLEFT", 0, 0);
+                    else
+                        oItem:SetPoint("TOPLEFT", lFrame, "BOTTOMLEFT", 0, 0);
+                    end
+					if _Player_Level >= _spellData.reqLevel and IsSpellKnown(_spellData.seal) then
+						lFrame = oItem;
+						scrollHeight = scrollHeight + math.ceil(lFrame:GetHeight());
+						spellFrameHeight = spellFrameHeight + math.ceil(oItem:GetHeight());
+						lFrame:Show();
+                        anyChildVisible = true;
+					else
+						if j == firstItem then
+							if j == #_spells then
+								--print("all section spells hidden")
+							else
+								firstItem = j + 1;
+							end
+						end
+						--print("Hiding", spellName)
+						oItem:Hide()
 					end
 				elseif _spellData.type == "aoetoggler" then
 					local spellName, _, spellTexture = GetSpellInfo(_spellData.spellID)

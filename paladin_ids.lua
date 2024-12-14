@@ -246,8 +246,8 @@ ids.Protection_Talent = {
 	ImprovedConcentrationAura =  13,
 	Anticipation =  14,
 	Precision =  15,
-} 
-ids.Retribution_Talent = { 
+}
+ids.Retribution_Talent = {
 	ImprovedBlessingofMight =  1,
 	Vengeance =  2,
 	Deflection =  3,
