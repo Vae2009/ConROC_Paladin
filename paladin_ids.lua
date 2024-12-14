@@ -353,8 +353,8 @@ function ConROC:UpdateSpellID()
 	if IsSpellKnown(ids.Rank.SealofWisdomRank3) then ids.Ability.SealofWisdom = ids.Rank.SealofWisdomRank3; ids.Debuff.JudgementofWisdom = ids.Rank.JudgementofWisdomRank3;
 	elseif IsSpellKnown(ids.Rank.SealofWisdomRank2) then ids.Ability.SealofWisdom = ids.Rank.SealofWisdomRank2; ids.Debuff.JudgementofWisdom = ids.Rank.JudgementofWisdomRank2; end
 
-	if IsSpellKnown(ids.Rank.TurnUndeadRank3) then ids.Ability.SealofWisdom = ids.Rank.TurnUndeadRank3;
-	elseif IsSpellKnown(ids.Rank.TurnUndeadRank2) then ids.Ability.SealofWisdom = ids.Rank.TurnUndeadRank2;end
+	if IsSpellKnown(ids.Rank.TurnUndeadRank3) then ids.Ability.TurnUndead = ids.Rank.TurnUndeadRank3;
+	elseif IsSpellKnown(ids.Rank.TurnUndeadRank2) then ids.Ability.TurnUndead = ids.Rank.TurnUndeadRank2;end
 
 	--Protection
 	if IsSpellKnown(ids.Rank.BlessingofProtectionRank3) then ids.Ability.BlessingofProtection = ids.Rank.BlessingofProtectionRank3;
