@@ -1,8 +1,6 @@
 ConROC.Paladin = {};
 
 local ConROC_Paladin, ids = ...;
-local currentSpecName;
-local currentSpecID;
 
 function ConROC:EnableRotationModule()
 	self.Description = "Paladin";
@@ -10,6 +8,8 @@ function ConROC:EnableRotationModule()
 
 	self:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED');
 	self.lastSpellId = 0;
+
+	ConROC:SpellmenuClass();
 end
 
 function ConROC:EnableDefenseModule()
@@ -24,23 +24,11 @@ function ConROC:UNIT_SPELLCAST_SUCCEEDED(event, unitID, lineID, spellID)
 	ConROC:JustCasted(spellID);
 end
 
-function ConROC:SpecUpdate()
-	currentSpecName = ConROC:currentSpec()
-    currentSpecID = ConROC:currentSpec("ID")
-
-	if currentSpecName then
-	   ConROC:Print(self.Colors.Info .. "Current spec:", self.Colors.Success ..  currentSpecName)
-	else
-	   ConROC:Print(self.Colors.Error .. "You do not currently have a spec.")
-	end
-end
-
-ConROC:SpecUpdate()
-
-local Racial, Spec, Ability, Rank, Holy_Talent, Prot_Talent, Ret_Talent, Runes, Buff, Debuff = ids.Racial, ids.Spec, ids.Ability, ids.Rank, ids.Holy_Talent, ids.Protection_Talent, ids.Retribution_Talent, ids.Runes, ids.Buff, ids.Debuff;
+local Racial, Spec, Ability, Rank, Holy_Talent, Prot_Talent, Ret_Talent, Engrave, Runes, Buff, Debuff = ids.Racial, ids.Spec, ids.Ability, ids.Rank, ids.Holy_Talent, ids.Protection_Talent, ids.Retribution_Talent, ids.Engrave, ids.Runes, ids.Buff, ids.Debuff;
 local consecEXP = 0;
 
 --Info
+local _Player_Spec, _Player_Spec_ID = ConROC:currentSpec();
 local _Player_Level = UnitLevel("player");
 local _Player_Percent_Health = ConROC:PercentHealth('player');
 local _is_PvP = ConROC:IsPvP();
@@ -67,6 +55,7 @@ local _can_Execute = _Target_Percent_Health < 20;
 local _Perception, _Perception_RDY = _, _;
 
 function ConROC:Stats()
+	_Player_Spec, _Player_Spec_ID = ConROC:currentSpec();
 	_Player_Level = UnitLevel("player");
 	_Player_Percent_Health = ConROC:PercentHealth('player');
 	_is_PvP = ConROC:IsPvP();
@@ -88,11 +77,6 @@ function ConROC:Stats()
 	_can_Execute = _Target_Percent_Health < 20;
 
 	_Perception, _Perception_RDY = ConROC:AbilityReady(Racial.Perception, timeShift);
-end
-
-function ConROC:PLAYER_TALENT_UPDATE()
-	ConROC:SpecUpdate();
-    ConROC:closeSpellmenu();
 end
 
 function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
@@ -267,7 +251,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 		end
 		return nil
 	end
-	if (currentSpecID == ids.Spec.Holy and ConROC:TarHostile()) or (currentSpecID ~= ids.Spec.Holy) then
+	if (_Player_Spec_ID == ids.Spec.Holy and ConROC:TarHostile()) or (_Player_Spec_ID ~= ids.Spec.Holy) then
 		if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
 			return _SealoftheCrusader;
 		end
@@ -326,11 +310,11 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 	end
 	return nil;
 	--[[
-	if currentSpecID == ids.Spec.Holy then
+	if _Player_Spec_ID == ids.Spec.Holy then
 	end
-	if currentSpecID == ids.Spec.Protection then
+	if _Player_Spec_ID == ids.Spec.Protection then
 	end
-	if currentSpecID == ids.Spec.Retribution then
+	if _Player_Spec_ID == ids.Spec.Retribution then
 	end
 	--]]
 end
