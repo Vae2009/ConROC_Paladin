@@ -141,8 +141,9 @@ local function CheckScrollbarVisibility()
     end
 end
 
-function ConROC:SpellmenuClass()
-	ConROC:UpdateSpellID();
+function ConROC:RotationChoices()
+    ConROC:UpdateSpellID();
+
 	ConROC_RoleSettingsTable = {
 		{
 			frameName = "Melee",
@@ -169,6 +170,7 @@ function ConROC:SpellmenuClass()
 			role = "ConROC_SM_Role_PvP",
 		},
 	}
+
 	ConROC_RotationSettingsTable = {
 		{
 	    frameName = "Aura",
@@ -238,6 +240,10 @@ function ConROC:SpellmenuClass()
 	    }
 	  }
 	}
+end
+
+function ConROC:SpellmenuClass()
+	ConROC:RotationChoices();
 
 	local _, Class, classId = UnitClass("player")
 	local Color = RAID_CLASS_COLORS[Class]
@@ -329,7 +335,7 @@ function ConROC:SpellmenuClass()
 
 	-- Register for events to check scrollbar visibility
 	ConROCScrollChild:SetScript("OnSizeChanged", CheckScrollbarVisibility)
-	ConROCScrollContainer:SetScript("OnShow", CheckScrollbarVisibility)		
+	ConROCScrollContainer:SetScript("OnShow", CheckScrollbarVisibility)
 end
 
 local function ConROC_NoOptionsFrame()
@@ -784,8 +790,9 @@ function ConROC:OptionNone(_spellData, i, j, _spellFrame, _checkType, _radioButt
     lastFrame:Show();
 end
 
-function ConROC:SpellMenuUpdate(newSpell)
-	ConROC:UpdateSpellID();
+function ConROC:SpellMenuUpdate()
+	ConROC:RotationChoices();
+
 	lastFrame = ConROCScrollChild;
 	local anyHLVisible = false;
 	scrollHeight = 0;
@@ -839,9 +846,9 @@ function ConROC:SpellMenuUpdate(newSpell)
 							oItem:Hide()
 							--print("Hide spell", spellName)
 						end
-					else
-						scrollHeight = scrollHeight + math.ceil(lFrame:GetHeight());
-						spellFrameHeight = spellFrameHeight + math.ceil(oItem:GetHeight());
+					--else
+					--	scrollHeight = scrollHeight + math.ceil(lFrame:GetHeight());
+					--	spellFrameHeight = spellFrameHeight + math.ceil(oItem:GetHeight());
 					end
 				elseif _spellData.type == "judgement" then
                     local oItem = _G["ConROC_SM_".._spellData.spellCheckbox]
@@ -1002,9 +1009,6 @@ function ConROC:SpellMenuUpdate(newSpell)
 		ConROCScrollContainer:Show();
 		ConROCScrollChild:Show();
     end
-	if newSpell then
-		ConROC:closeSpellmenu();
-	end
 end
 
 function ConROC:RoleProfile()

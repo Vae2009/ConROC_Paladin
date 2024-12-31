@@ -9,7 +9,9 @@ function ConROC:EnableRotationModule()
 	self:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED');
 	self.lastSpellId = 0;
 
-	ConROC:SpellmenuClass();
+	if ConROCSpellmenuClass == nil then
+		ConROC:SpellmenuClass();
+	end
 end
 
 function ConROC:EnableDefenseModule()
@@ -81,6 +83,7 @@ end
 
 function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 	ConROC:UpdateSpellID();
+	wipe(ConROC.SuggestedSpells);
 	ConROC:Stats();
 
 --Abilities	
@@ -121,32 +124,19 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 		local _SealofWisdom_BUFF = ConROC:Aura(_SealofWisdom, timeShift);
 		local _JudgementofWisdom_DEBUFF = ConROC:TargetAura(Debuff.JudgementofWisdom, timeShift);
 	local _SealofRighteousness, _SealofRighteousness_RDY = ConROC:AbilityReady(Ability.SealofRighteousness, timeShift);
-		local _SealofRighteousness_BUFF, _, _SealofRighteousness_DUR, _SealofRighteousness_UP = ConROC:Aura(_SealofRighteousness, timeShift);
+		local _SealofRighteousness_BUFF, _, _SealofRighteousness_DUR = ConROC:Aura(_SealofRighteousness, timeShift);
 	local _SealofCommand, _SealofCommand_RDY = ConROC:AbilityReady(Ability.SealofCommand, timeShift);
-		local _, _, _, _SealofCommand_UP = ConROC:Aura(_SealofCommand, timeShift);
+		local _SealofCommand_BUFF = ConROC:Aura(_SealofCommand, timeShift);
 	local _Exorcism, _Exorcism_RDY = ConROC:AbilityReady(Ability.Exorcism, timeShift);
 	local _HammerofJustice, _HammerofJustice_RDY = ConROC:AbilityReady(Ability.HammerofJustice, timeShift);
 
-    local judgeDebuff = {
-		_JudgementoftheCrusader_DEBUFF,
-        _JudgementofJustice_DEBUFF,
-		_JudgementofLight_DEBUFF,
-        _JudgementofWisdom_DEBUFF,
-    }
-
-	local judgeUp = false;
-		for k, v in pairs(judgeDebuff) do
-			if v then
-				judgeUp = true;
-				break
-			end
-		end
-
 --Runes
 	local _DivineStorm, _DivineStorm_RDY = ConROC:AbilityReady(Runes.DivineStorm, timeShift);
+	local _, _Exorcist_Passive = ConROC:AbilityReady(Runes.Exorcist, timeShift);
+
 	local _HornofLordaeron, _HornofLordaeron_RDY = ConROC:AbilityReady(Runes.HornofLordaeron, timeShift);
 	local _SealofMartyrdom, _SealofMartyrdom_RDY = ConROC:AbilityReady(Runes.SealofMartyrdom, timeShift);
-		local _, _, _SealofMartyrdom_DUR, _SealofMartyrdom_UP = ConROC:Aura(Buff.SealofMartyrdom, timeShift);
+		local _SealofMartyrdom_BUFF, _, _SealofMartyrdom_DUR = ConROC:Aura(Buff.SealofMartyrdom, timeShift);
 	local _BeaconofLight, _BeaconofLight_RDY = ConROC:AbilityReady(Runes.BeaconofLight, timeShift);
 	local _CrusaderStrike, _CrusaderStrike_RDY = ConROC:AbilityReady(Runes.CrusaderStrike, timeShift);
 	local _InspirationExemplar, _InspirationExemplar_RDY = ConROC:AbilityReady(Runes.InspirationExemplar, timeShift);
@@ -155,11 +145,29 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 	local _Rebuke, _Rebuke_RDY = ConROC:AbilityReady(Runes.Rebuke, timeShift);
 
 --Conditions
-	local knowMartyrdom = IsSpellKnownOrOverridesKnown(_SealofMartyrdom)
-	local isExorcist = IsSpellKnownOrOverridesKnown(ids.Runes.Exorcist)
+	local _Can_Exorcist = ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon");
 	local isAutoAttacking = IsPlayerAttacking("target");
 	local twohandIDs = {1,5,6,8,10} --Two-Handed Axes, Two-Handed Maces, Polearms, Two-Handed Swords, Saves
 	local has2HandID = ConROC:Equipped(twohandIDs, "MAINHANDSLOT")
+
+	local judgeDebuff = {
+		_JudgementoftheCrusader_DEBUFF,
+        _JudgementofJustice_DEBUFF,
+		_JudgementofLight_DEBUFF,
+        _JudgementofWisdom_DEBUFF,
+    }
+
+	local judgeUp = false;
+	for k, v in pairs(judgeDebuff) do
+		if v then
+			judgeUp = true;
+			break
+		end
+	end
+
+	if _Exorcist_Passive then
+		_Can_Exorcist = true;
+	end
 
 --Indicators	
 	ConROC:AbilityRaidBuffs(_BlessingofMight, ConROC:CheckBox(ConROC_SM_Bless_Might) and _BlessingofMight_RDY and not _BlessingofMight_BUFF);
@@ -177,150 +185,286 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 --Warnings
 
 --Rotations
-	if ConROC.Seasons.IsSoD then
-		if ConROC:CheckBox(ConROC_SM_Role_Melee) or (ConROC:CheckBox(ConROC_SM_Role_Healer) and ConROC:TarHostile()) then
-			if not ConROC_AoEButton:IsVisible() then
-				if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
-					return _SealoftheCrusader;
+	repeat
+		while(true) do
+			if ConROC.Seasons.IsSoD then
+				if ConROC:CheckBox(ConROC_SM_Role_Melee) or (ConROC:CheckBox(ConROC_SM_Role_Healer) and ConROC:TarHostile()) then
+					if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealoftheCrusader);
+						_SealoftheCrusader_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Judgement_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofJustice);
+						_SealofJustice_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Judgement_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofLight);
+						_SealofLight_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Judgement_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofWisdom);
+						_SealofWisdom_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Judgement_RDY and not judgeUp then
+						tinsert(ConROC.SuggestedSpells, _Judgement);
+						_Judgement_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and (not _SealofRighteousness_BUFF or _SealofRighteousness_DUR <= 2) and not (_SealoftheCrusader_BUFF or _SealofMartyrdom_BUFF) then
+						tinsert(ConROC.SuggestedSpells, _SealofRighteousness);
+						_SealofRighteousness_BUFF = true;
+						_SealofRighteousness_DUR = 30;
+						_Queue = _Queue + 1;
+						break;
+					end
+					if ConROC:CheckBox(ConROC_SM_Seal_Command) and _SealofCommand_RDY and not _SealofCommand_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofCommand);
+						_SealofCommand_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+					if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealoftheCrusader);
+						_SealoftheCrusader_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofJustice);
+						_SealofJustice_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofLight);
+						_SealofLight_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofWisdom);
+						_SealofWisdom_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _DivineStorm_RDY then
+						tinsert(ConROC.SuggestedSpells, _DivineStorm);
+						_DivineStorm_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _CrusaderStrike_RDY then
+						tinsert(ConROC.SuggestedSpells, _CrusaderStrike);
+						_CrusaderStrike_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Exorcism_RDY and _Can_Exorcist then
+						tinsert(ConROC.SuggestedSpells, _Exorcism);
+						_Exorcism_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Judgement_RDY and not judgeUp then
+						tinsert(ConROC.SuggestedSpells, _Judgement);
+						_Judgement_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
 				end
-				if _Judgement_RDY and not judgeUp and _SealoftheCrusader_BUFF then
-					return _Judgement;
+
+				if ConROC:CheckBox(ConROC_SM_Role_Tank) then
+					if _SealofCommand_RDY and not _SealofCommand_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofCommand);
+						_SealofCommand_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _SealofMartyrdom_RDY and not _SealofMartyrdom_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofMartyrdom);
+						_SealofMartyrdom_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and (not _SealofRighteousness_BUFF or _SealofRighteousness_DUR <= 2) and not (_SealoftheCrusader_BUFF or _SealofMartyrdom_BUFF) then
+						tinsert(ConROC.SuggestedSpells, _SealofRighteousness);
+						_SealofRighteousness_BUFF = true;
+						_SealofRighteousness_DUR = 30;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _AvengersShield_RDY and ConROC:Equipped('Shields', 'SECONDARYHANDSLOT') then
+						tinsert(ConROC.SuggestedSpells, _AvengersShield);
+						_AvengersShield_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Exorcism_RDY and _Can_Exorcist then
+						tinsert(ConROC.SuggestedSpells, _Exorcism);
+						_Exorcism_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Judgement_RDY and not judgeUp then
+						tinsert(ConROC.SuggestedSpells, _Judgement);
+						_Judgement_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _DivineStorm_RDY then
+						tinsert(ConROC.SuggestedSpells, _DivineStorm);
+						_DivineStorm_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Consecration_RDY then
+						tinsert(ConROC.SuggestedSpells, _Consecration);
+						_Consecration_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+				end
+			else
+				if (ConROC:CheckBox(ConROC_SM_Role_Healer) and ConROC:TarHostile()) or not ConROC:CheckBox(ConROC_SM_Role_Healer) then
+					if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealoftheCrusader);
+						_SealoftheCrusader_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Judgement_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofJustice);
+						_SealofJustice_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Judgement_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofLight);
+						_SealofLight_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Judgement_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
+						tinsert(ConROC.SuggestedSpells, _SealofWisdom);
+						_SealofWisdom_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Judgement_RDY and not judgeUp then
+						tinsert(ConROC.SuggestedSpells, _Judgement);
+						_Judgement_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and not _SealofRighteousness_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofRighteousness);
+						_SealofRighteousness_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealoftheCrusader);
+						_SealoftheCrusader_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Command) and _SealofCommand_RDY and not _SealofCommand_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofCommand);
+						_SealofCommand_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofJustice);
+						_SealofJustice_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofLight);
+						_SealofLight_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF then
+						tinsert(ConROC.SuggestedSpells, _SealofWisdom);
+						_SealofWisdom_BUFF = true;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if ConROC:CheckBox(ConROC_SM_Stun_HammerofJustice) and _HammerofJustice_RDY then
+						tinsert(ConROC.SuggestedSpells, _HammerofJustice);
+						_HammerofJustice_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Judgement_RDY and (_SealofCommand_BUFF or _SealofRighteousness_BUFF) then
+						tinsert(ConROC.SuggestedSpells, _Judgement);
+						_Judgement_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
+
+					if _Exorcism_RDY and _Can_Exorcist then
+						tinsert(ConROC.SuggestedSpells, _Exorcism);
+						_Exorcism_RDY = false;
+						_Queue = _Queue + 1;
+						break;
+					end
 				end
 			end
 
-			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and (not _SealofRighteousness_UP or _SealofRighteousness_DUR <= 2) and not (_SealoftheCrusader_BUFF or _SealofMartyrdom_UP) then
-				return _SealofRighteousness;
-			end
-			if ConROC:CheckBox(ConROC_SM_Seal_Command) and _SealofCommand_RDY and not _SealofCommand_UP then
-				return _SealofCommand;
-			end
-			if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
-				return _SealoftheCrusader;
-			end
-
-			if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
-				return _SealofJustice;
-			end
-
-			if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
-				return _SealofLight;
-			end
-
-			if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
-				return _SealofWisdom;
-			end
-			if _DivineStorm_RDY then
-				return _DivineStorm
-			end
-			if _CrusaderStrike_RDY then
-				return _CrusaderStrike
-			end
-			if _Exorcism_RDY and (ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon") or isExorcist ) then
-				return _Exorcism;
-			end
-			if _Judgement_RDY and not judgeUp then
-				return _Judgement;
-			end
+			tinsert(ConROC.SuggestedSpells, 26008); --Waiting Spell Icon
+			_Queue = _Queue + 3;
+			break;
 		end
-
-		if ConROC:CheckBox(ConROC_SM_Role_Tank) then
-			if _SealofCommand_RDY and not _SealofCommand_UP and not knowMartyrdom then
-				return _SealofCommand;
-			end
-			if _SealofMartyrdom_RDY and knowMartyrdom and not _SealofMartyrdom_UP then
-				return _SealofMartyrdom
-			end
-			if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and (not _SealofRighteousness_UP or _SealofRighteousness_DUR <= 2) and not (_SealoftheCrusader_BUFF or _SealofMartyrdom_UP) then
-				return _SealofRighteousness;
-			end
-			if _AvengersShield_RDY then
-				return _AvengersShield
-			end
-			if isExorcist and _Exorcism_RDY then
-				return _Exorcism
-			end
-			if _Judgement_RDY and not judgeUp then
-				return _Judgement;
-			end
-			if _DivineStorm_RDY then
-				return _DivineStorm
-			end
-			if _Consecration_RDY then
-				return _Consecration
-			end
-		end
-		return nil
-	end
-	if (_Player_Spec_ID == ids.Spec.Holy and ConROC:TarHostile()) or (_Player_Spec_ID ~= ids.Spec.Holy) then
-		if ConROC:CheckBox(ConROC_SM_Judgement_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF and not _JudgementoftheCrusader_DEBUFF and (judgeCD >= judgeMCD - 1) then
-			return _SealoftheCrusader;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Judgement_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF and not _JudgementofJustice_DEBUFF and (judgeCD >= judgeMCD - 1) then
-			return _SealofJustice;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Judgement_Light) and _SealofLight_RDY and not _SealofLight_BUFF and not _JudgementofLight_DEBUFF and (judgeCD >= judgeMCD - 1) then
-			return _SealofLight;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Judgement_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF and not _JudgementofWisdom_DEBUFF and (judgeCD >= judgeMCD - 1) then
-			return _SealofWisdom;
-		end
-
-		if _Judgement_RDY and not judgeUp then
-			return _Judgement;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Seal_Righteousness) and _SealofRighteousness_RDY and not _SealofRighteousness_BUFF then
-			return _SealofRighteousness;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Seal_Crusader) and _SealoftheCrusader_RDY and not _SealoftheCrusader_BUFF then
-			return _SealoftheCrusader;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Seal_Command) and _SealofCommand_RDY and not _SealofCommand_UP then
-			return _SealofCommand;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Seal_Justice) and _SealofJustice_RDY and not _SealofJustice_BUFF then
-			return _SealofJustice;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Seal_Light) and _SealofLight_RDY and not _SealofLight_BUFF then
-			return _SealofLight;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Seal_Wisdom) and _SealofWisdom_RDY and not _SealofWisdom_BUFF then
-			return _SealofWisdom;
-		end
-
-		if ConROC:CheckBox(ConROC_SM_Stun_HammerofJustice) and _HammerofJustice_RDY and _Judgement_RDY then
-			return _HammerofJustice;
-		end
-
-		if _Judgement_RDY and (_SealofCommand_UP or _SealofRighteousness_UP) then
-			return _Judgement;
-		end
-
-		if _Exorcism_RDY and (ConROC:CreatureType("Undead") or ConROC:CreatureType("Demon")) then
-			return _Exorcism;
-		end
-	end
-	return nil;
-	--[[
-	if _Player_Spec_ID == ids.Spec.Holy then
-	end
-	if _Player_Spec_ID == ids.Spec.Protection then
-	end
-	if _Player_Spec_ID == ids.Spec.Retribution then
-	end
-	--]]
+	until _Queue >= 3;
+return nil;
 end
 
 function ConROC.Paladin.Defense(_, timeShift, currentSpell, gcd)
 	ConROC:UpdateSpellID();
+	wipe(ConROC.SuggestedDefSpells);
 	ConROC:Stats();
 
 --Abilities	
@@ -341,34 +485,33 @@ function ConROC.Paladin.Defense(_, timeShift, currentSpell, gcd)
 
 --Rotations
 	if _DevotionAura_RDY and not _DevotionAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Devotion) then
-		return _DevotionAura;
+		tinsert(ConROC.SuggestedDefSpells, _DevotionAura);
 	end
 
 	if _RetributionAura_RDY and not _RetributionAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Retribution) then
-		return _RetributionAura;
+		tinsert(ConROC.SuggestedDefSpells, _RetributionAura);
 	end
 
 	if _ConcentrationAura_RDY and not _ConcentrationAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Concentration) then
-		return _ConcentrationAura;
+		tinsert(ConROC.SuggestedDefSpells, _ConcentrationAura);
 	end
 
 	if _SanctityAura_RDY and not _SanctityAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_Sanctity) then
-		return _SanctityAura;
+		tinsert(ConROC.SuggestedDefSpells, _SanctityAura);
 	end
 
 	if _FireResistanceAura_RDY and not _FireResistanceAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_FireResistance) then
-		return _FireResistanceAura;
+		tinsert(ConROC.SuggestedDefSpells, _FireResistanceAura);
 	end
 
 	if _FrostResistanceAura_RDY and not _FrostResistanceAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_FrostResistance) then
-		return _FrostResistanceAura;
+		tinsert(ConROC.SuggestedDefSpells, _FrostResistanceAura);
 	end
 
 	if _ShadowResistanceAura_RDY and not _ShadowResistanceAura_FORM and ConROC:CheckBox(ConROC_SM_Aura_ShadowResistance) then
-		return _ShadowResistanceAura;
+		tinsert(ConROC.SuggestedDefSpells, _ShadowResistanceAura);
 	end
-
-	return nil;
+return nil;
 end
 
 function ConROC:JustCasted(spellID)
