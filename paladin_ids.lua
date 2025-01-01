@@ -268,9 +268,12 @@ ids.Engrave = {
 
 }
 ids.Runes = {
+	AuraMastery = 407624,
+	AvengersShield = 407669,
 	DivineStorm = 407778,
 	Exorcist = 415076,
-
+	HammeroftheRighteous = 407632,
+	ShieldoftheRighteousness = 440658,
 
 	HornofLordaeron = 425600,
 	SealofMartyrdom = 407798,
@@ -278,7 +281,6 @@ ids.Runes = {
 	CrusaderStrike = 407676,
 	InspirationExemplar = 407880,
 	HandofReckoning = 407631,
-	AvengersShield = 407669,
 	DivineSacrifice = 407804,
 	Rebuke = 425609,
 	SheathofLight = 426158, --Phase 2 -passive

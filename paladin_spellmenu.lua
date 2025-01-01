@@ -188,10 +188,11 @@ function ConROC:RotationChoices()
 		{
 	    frameName = "Judgements",
 	    spells = {
-	      {spellID = ids.Debuff.JudgementoftheCrusader, spellCheckbox = "Judgement_Crusader", reqLevel = 6, type = "judgement", seal = ids.Ability.SealoftheCrusader},
-	      {spellID = ids.Debuff.JudgementofJustice, spellCheckbox = "Judgement_Justice", reqLevel = 22, type = "judgement", seal = ids.Ability.SealofJustice},
-	      {spellID = ids.Debuff.JudgementofLight, spellCheckbox = "Judgement_Light", reqLevel = 30, type = "judgement", seal = ids.Ability.SealofLight},
-	      {spellID = ids.Debuff.JudgementofWisdom, spellCheckbox = "Judgement_Wisdom", reqLevel = 38, type = "judgement", seal = ids.Ability.SealofWisdom}
+	      	{spellID = ids.Debuff.JudgementoftheCrusader, spellCheckbox = "Judgement_Crusader", reqLevel = 6, type = "judgement", seal = ids.Ability.SealoftheCrusader},
+	      	{spellID = ids.Debuff.JudgementofJustice, spellCheckbox = "Judgement_Justice", reqLevel = 22, type = "judgement", seal = ids.Ability.SealofJustice},
+	      	{spellID = ids.Debuff.JudgementofLight, spellCheckbox = "Judgement_Light", reqLevel = 30, type = "judgement", seal = ids.Ability.SealofLight},
+	      	{spellID = ids.Debuff.JudgementofWisdom, spellCheckbox = "Judgement_Wisdom", reqLevel = 38, type = "judgement", seal = ids.Ability.SealofWisdom},
+			{spellID = "None", spellCheckbox = "Judgement_None", reqLevel = 6, type="none"}
 	    },
 	    groupType = "radioButtons"
 		},
@@ -205,7 +206,6 @@ function ConROC:RotationChoices()
 	    	{spellID = ids.Ability.SealofJustice, spellCheckbox = "Seal_Justice", reqLevel = 22, type="spell"},
 	    	{spellID = ids.Ability.SealofLight, spellCheckbox = "Seal_Light", reqLevel = 30, type="spell"},
 	    	{spellID = ids.Ability.SealofWisdom, spellCheckbox = "Seal_Wisdom", reqLevel = 38, type="spell"},
-	    	--[[{spellID = "None", spellCheckbox = "Seal_None", reqLevel = 1, type="none"}]]
 	    },
 	    groupType = "radioButtons"
 	  },
@@ -229,7 +229,7 @@ function ConROC:RotationChoices()
 	  {
 	    frameName = "Stuns",
 	    spells = {
-	    	{spellID = ids.Ability.HammerofJustice, spellCheckbox = "Stun_HammerofJustice", reqLevel = 30, type="spell"},
+	    	{spellID = ids.Ability.HammerofJustice, spellCheckbox = "Stun_HammerofJustice", reqLevel = 8, type="spell"},
 	    },
 	    groupType = "checkBoxes"
 	  },
