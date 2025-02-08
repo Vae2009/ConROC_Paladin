@@ -1,5 +1,5 @@
 ## Title:-|cffFFFFFFConROC|r- |cffF58CBAPaladin|r
-## Version: 1.15.19
+## Version: 1.15.20
 ## Author: Vae
 ## Interface: 11506
 ## SavedVariablesPerCharacter: ConROCPaladinSpells

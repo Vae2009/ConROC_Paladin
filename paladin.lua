@@ -138,7 +138,7 @@ function ConROC.Paladin.Damage(_, timeShift, currentSpell, gcd)
 	local _HammeroftheRighteous, _HammeroftheRighteous_RDY = ConROC:AbilityReady(Runes.HammeroftheRighteous, timeShift);
 	local _Rebuke, _Rebuke_RDY = ConROC:AbilityReady(Runes.Rebuke, timeShift);
 	local _SealofMartyrdom, _SealofMartyrdom_RDY = ConROC:AbilityReady(Runes.SealofMartyrdom, timeShift);
-		local _SealofMartyrdom_BUFF, _, _SealofMartyrdom_DUR = ConROC:Aura(Buff.SealofMartyrdom, timeShift);
+		local _SealofMartyrdom_BUFF, _, _SealofMartyrdom_DUR = ConROC:Aura(_SealofMartyrdom, timeShift);
 	local _ShieldoftheRighteousness, _ShieldoftheRighteousness_RDY = ConROC:AbilityReady(Runes.ShieldoftheRighteousness, timeShift);
 
 	local _HornofLordaeron, _HornofLordaeron_RDY = ConROC:AbilityReady(Runes.HornofLordaeron, timeShift);
