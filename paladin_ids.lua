@@ -86,6 +86,12 @@ ids.Rank = {
 	ExorcismRank4 = 10312,
 	ExorcismRank5 = 10313,
 	ExorcismRank6 = 10314,
+	ExorcismSoDRank1 = 415068,
+	ExorcismSoDRank2 = 415069,
+	ExorcismSoDRank3 = 415070,
+	ExorcismSoDRank4 = 415071,
+	ExorcismSoDRank5 = 415072,
+	ExorcismSoDRank6 = 415073,
 	FlashofLightRank1 = 19750,
 	FlashofLightRank2 = 19939,
 	FlashofLightRank3 = 19940,
@@ -314,11 +320,21 @@ function ConROC:UpdateSpellID()
 	elseif IsSpellKnown(ids.Rank.ConsecrationRank3) then ids.Ability.Consecration = ids.Rank.ConsecrationRank3;
 	elseif IsSpellKnown(ids.Rank.ConsecrationRank2) then ids.Ability.Consecration = ids.Rank.ConsecrationRank2; end
 
-	if IsSpellKnown(ids.Rank.ExorcismRank6) then ids.Ability.Exorcism = ids.Rank.ExorcismRank6;
-	elseif IsSpellKnown(ids.Rank.ExorcismRank5) then ids.Ability.Exorcism = ids.Rank.ExorcismRank5;
-	elseif IsSpellKnown(ids.Rank.ExorcismRank4) then ids.Ability.Exorcism = ids.Rank.ExorcismRank4;
-	elseif IsSpellKnown(ids.Rank.ExorcismRank3) then ids.Ability.Exorcism = ids.Rank.ExorcismRank3;
-	elseif IsSpellKnown(ids.Rank.ExorcismRank2) then ids.Ability.Exorcism = ids.Rank.ExorcismRank2; end
+	if ConROC.Seasons.IsSoD and IsSpellKnown(ids.Runes.Exorcist) then
+		if IsSpellKnown(ids.Rank.ExorcismRank6) then ids.Ability.Exorcism = ids.Rank.ExorcismSoDRank6;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank5) then ids.Ability.Exorcism = ids.Rank.ExorcismSoDRank5;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank4) then ids.Ability.Exorcism = ids.Rank.ExorcismSoDRank4;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank3) then ids.Ability.Exorcism = ids.Rank.ExorcismSoDRank3;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank2) then ids.Ability.Exorcism = ids.Rank.ExorcismSoDRank2;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank1) then ids.Ability.Exorcism = ids.Rank.ExorcismSoDRank1; end
+	else
+		if IsSpellKnown(ids.Rank.ExorcismRank6) then ids.Ability.Exorcism = ids.Rank.ExorcismRank6;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank5) then ids.Ability.Exorcism = ids.Rank.ExorcismRank5;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank4) then ids.Ability.Exorcism = ids.Rank.ExorcismRank4;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank3) then ids.Ability.Exorcism = ids.Rank.ExorcismRank3;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank2) then ids.Ability.Exorcism = ids.Rank.ExorcismRank2;
+		elseif IsSpellKnown(ids.Rank.ExorcismRank1) then ids.Ability.Exorcism = ids.Rank.ExorcismRank1; end
+	end
 
 	if IsSpellKnown(ids.Rank.FlashofLightRank6) then ids.Ability.FlashofLight = ids.Rank.FlashofLightRank6;
 	elseif IsSpellKnown(ids.Rank.FlashofLightRank5) then ids.Ability.FlashofLight = ids.Rank.FlashofLightRank5;
